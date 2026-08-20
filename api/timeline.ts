@@ -1,7 +1,7 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types";
-import { queryDatabase, propNumber, propString, propDateStart } from "./_lib/notion";
-import { todayKST, addDays } from "./_lib/date";
-import { sendError } from "./_lib/http";
+import type { ApiRequest, ApiResponse } from "./_lib/types.js";
+import { queryDatabase, propNumber, propString, propDateStart } from "./_lib/notion.js";
+import { todayKST, addDays } from "./_lib/date.js";
+import { sendError } from "./_lib/http.js";
 
 const TIME_LOG_DB = "6b79332a8eea457f94560296f866f214";
 

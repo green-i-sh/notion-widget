@@ -1,5 +1,5 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types";
-import { queryDatabase, NotionApiError } from "./_lib/notion";
+import type { ApiRequest, ApiResponse } from "./_lib/types.js";
+import { queryDatabase, NotionApiError } from "./_lib/notion.js";
 
 const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
 

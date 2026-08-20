@@ -1,5 +1,5 @@
-import type { ApiResponse } from "./types";
-import { TokenMissingError, NotionApiError } from "./notion";
+import type { ApiResponse } from "./types.js";
+import { TokenMissingError, NotionApiError } from "./notion.js";
 
 /**
  * Logs the real error to the Vercel function log and sends it to the client

@@ -1,7 +1,7 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types";
-import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "./_lib/notion";
-import { mondayOf, addDays, todayKST } from "./_lib/date";
-import { sendError } from "./_lib/http";
+import type { ApiRequest, ApiResponse } from "./_lib/types.js";
+import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "./_lib/notion.js";
+import { mondayOf, addDays, todayKST } from "./_lib/date.js";
+import { sendError } from "./_lib/http.js";
 
 const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
 const ROUTINES = ["Exercise", "Reading", "Organizing", "Other"] as const;
