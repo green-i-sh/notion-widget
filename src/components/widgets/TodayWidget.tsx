@@ -24,26 +24,28 @@ export function TodayWidget() {
   if (!summary.found) return <div className="empty">오늘 Daily Log가 아직 없습니다.</div>;
 
   const { tasksDone = 0, tasksTotal = 0, trackedMin = 0, expense = 0, morningPage } = summary;
-  const pct = tasksTotal ? Math.round((tasksDone / tasksTotal) * 100) : 0;
+  const written = morningPage === "작성";
 
   return (
     <>
-      <div className="row">
-        <span className="muted">Tasks</span>
-        <span style={{ marginLeft: "auto" }}>{tasksDone} / {tasksTotal}</span>
+      <div className="embed-title">Today · Monitoring</div>
+      <div className="today-row">
+        <span className="today-label">Tasks 완료</span>
+        <span className="today-value">{tasksDone} / {tasksTotal}</span>
       </div>
-      <div className="bar"><span style={{ width: `${pct}%` }} /></div>
-      <div className="row">
-        <span className="muted">Tracked</span>
-        <span style={{ marginLeft: "auto" }}>{formatMinutes(trackedMin)}</span>
+      <div className="today-row">
+        <span className="today-label">Tracked</span>
+        <span className="today-value">{formatMinutes(trackedMin)}</span>
       </div>
-      <div className="row">
-        <span className="muted">Expense</span>
-        <span style={{ marginLeft: "auto" }}>₩{Math.abs(expense).toLocaleString()}</span>
+      <div className="today-row">
+        <span className="today-label">Expense</span>
+        <span className="today-value">₩{Math.abs(expense).toLocaleString()}</span>
       </div>
-      <div className="row">
-        <span className="muted">Morning Page</span>
-        <span style={{ marginLeft: "auto" }}>{morningPage || "—"}</span>
+      <div className="today-row">
+        <span className="today-label">Morning Page</span>
+        <span className={`today-chip ${written ? "done" : "pending"}`}>
+          {written ? "작성 완료" : morningPage || "미작성"}
+        </span>
       </div>
     </>
   );

@@ -43,9 +43,12 @@ export default function App() {
       order: 0,
       options: {},
     };
+    // Routine/Today are meant to read as a block already on the Notion
+    // page, not a floating card — drop the border and let the page bg show.
+    const flush = standalone === "routine" || standalone === "today";
     return (
       <div className={`station${appearance.compact ? " compact" : ""}`}>
-        <div className="widget">
+        <div className={`widget${flush ? " flush" : ""}`}>
           <div className="widget-body"><Component config={config} /></div>
         </div>
       </div>

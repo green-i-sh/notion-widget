@@ -126,6 +126,18 @@ body {
   border-color: var(--accent);
 }
 
+/* Notion-embedded widgets (?w=routine, ?w=today) — no card, just the block. */
+.widget.flush {
+  border-color: transparent;
+  background: transparent;
+}
+
+.embed-title {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--text);
+}
+
 .widget-head {
   display: flex;
   align-items: center;
@@ -443,6 +455,114 @@ input[type="color"] {
 .habit-cell:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* ---- routine (Notion-backed, ?w=routine) ---- */
+
+.routine-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.routine-row:last-child {
+  border-bottom: 0;
+}
+
+.routine-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.routine-chip {
+  display: inline-block;
+  background: #e8eaf6;
+  color: #283593;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.routine-count {
+  color: var(--subtext);
+  font-size: 12px;
+}
+
+.routine-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.routine-cell {
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--subtext);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.routine-cell.on {
+  background: #e8eaf6;
+  border-color: #c5cae9;
+  color: #283593;
+  font-weight: 600;
+}
+
+.routine-cell:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---- today (Notion-backed, ?w=today) ---- */
+
+.today-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.today-row:last-child {
+  border-bottom: 0;
+}
+
+.today-label {
+  color: var(--subtext);
+  font-size: 12.5px;
+}
+
+.today-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.today-chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.today-chip.done {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.today-chip.pending {
+  background: #eeeeee;
+  color: #757575;
 }
 
 .timeline {

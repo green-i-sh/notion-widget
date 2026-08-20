@@ -30,31 +30,38 @@ export function RoutineWidget() {
 
   return (
     <>
-      {ROUTINES.map((routine) => (
-        <div key={routine} className="habit-row">
-          <div>{routine}</div>
-          <div className="habit-cells">
-            {days.map((day, i) => {
-              const on = day.values?.[routine] ?? false;
-              if (!day.pageId) {
-                return <button key={day.date} type="button" className="habit-cell" disabled aria-label={`${day.date} 기록 없음`} />;
-              }
-              return (
-                <button
-                  key={day.date}
-                  type="button"
-                  className={`habit-cell${on ? " on" : ""}`}
-                  aria-pressed={on}
-                  aria-label={`${routine} ${day.date}`}
-                  onClick={() => toggle(day, routine)}
-                >
-                  {on ? "✓" : WEEKDAYS_KO[(i + 1) % 7]}
-                </button>
-              );
-            })}
+      <div className="embed-title">Routine Check</div>
+      {ROUTINES.map((routine) => {
+        const count = days.filter((d) => d.values?.[routine]).length;
+        return (
+          <div key={routine} className="routine-row">
+            <div className="routine-head">
+              <span className="routine-chip">{routine}</span>
+              <span className="routine-count">{count} / 7</span>
+            </div>
+            <div className="routine-grid">
+              {days.map((day, i) => {
+                const on = day.values?.[routine] ?? false;
+                if (!day.pageId) {
+                  return <button key={day.date} type="button" className="routine-cell" disabled aria-label={`${day.date} 기록 없음`} />;
+                }
+                return (
+                  <button
+                    key={day.date}
+                    type="button"
+                    className={`routine-cell${on ? " on" : ""}`}
+                    aria-pressed={on}
+                    aria-label={`${routine} ${day.date}`}
+                    onClick={() => toggle(day, routine)}
+                  >
+                    {on ? "✓" : WEEKDAYS_KO[(i + 1) % 7]}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }
