@@ -1,6 +1,7 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types";
 import { queryDatabase, propNumber, propString, propDateStart } from "./_lib/notion";
 import { todayKST, addDays } from "./_lib/date";
+import { sendError } from "./_lib/http";
 
 const TIME_LOG_DB = "6b79332a8eea457f94560296f866f214";
 
@@ -39,6 +40,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
     res.status(200).json({ date, totalMin, entries });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err, { endpoint: "timeline", databaseId: TIME_LOG_DB });
   }
 }

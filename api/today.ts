@@ -1,6 +1,7 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types";
 import { queryDatabase, propNumber, propString } from "./_lib/notion";
 import { todayKST } from "./_lib/date";
+import { sendError } from "./_lib/http";
 
 const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
 
@@ -30,6 +31,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       morningPage: propString(props["Morning Page"]),
     });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err, { endpoint: "today", databaseId: DAILY_LOG_DB });
   }
 }

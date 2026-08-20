@@ -1,14 +1,39 @@
 const NOTION_VERSION = "2022-06-28";
 const API_BASE = "https://api.notion.com/v1";
 
+export class TokenMissingError extends Error {
+  constructor() {
+    super("NOTION_TOKEN이 설정되지 않았습니다.");
+    this.name = "TokenMissingError";
+  }
+}
+
+/** Wraps a non-2xx response from Notion, keeping its status and message. */
+export class NotionApiError extends Error {
+  status: number;
+  notionCode?: string;
+
+  constructor(message: string, status: number, notionCode?: string) {
+    super(message);
+    this.name = "NotionApiError";
+    this.status = status;
+    this.notionCode = notionCode;
+  }
+}
+
 function authHeaders(): Record<string, string> {
   const token = process.env.NOTION_TOKEN;
-  if (!token) throw new Error("NOTION_TOKEN이 설정되지 않았습니다.");
+  if (!token) throw new TokenMissingError();
   return {
     Authorization: `Bearer ${token}`,
     "Notion-Version": NOTION_VERSION,
     "Content-Type": "application/json",
   };
+}
+
+async function throwNotionError(res: Response): Promise<never> {
+  const body = (await res.json().catch(() => null)) as { message?: string; code?: string } | null;
+  throw new NotionApiError(body?.message ?? `Notion이 ${res.status}을 반환했습니다.`, res.status, body?.code);
 }
 
 export async function queryDatabase(
@@ -20,7 +45,7 @@ export async function queryDatabase(
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Notion query 실패 (${res.status})`);
+  if (!res.ok) await throwNotionError(res);
   return res.json() as Promise<{ results: { id: string; properties: Record<string, unknown> }[] }>;
 }
 
@@ -33,7 +58,7 @@ export async function updatePageProperties(
     headers: authHeaders(),
     body: JSON.stringify({ properties }),
   });
-  if (!res.ok) throw new Error(`Notion 업데이트 실패 (${res.status})`);
+  if (!res.ok) await throwNotionError(res);
 }
 
 /**

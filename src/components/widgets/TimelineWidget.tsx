@@ -46,7 +46,7 @@ export function TimelineWidget() {
         setEntries(day.entries);
         setTotalMin(day.totalMin);
       })
-      .catch(() => { if (!cancelled) setError("Notion에서 Time Log를 불러오지 못했습니다."); });
+      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
     return () => { cancelled = true; };
   }, []);
 

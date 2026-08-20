@@ -15,7 +15,7 @@ export function TodayWidget() {
     let cancelled = false;
     fetchToday()
       .then((s) => { if (!cancelled) setSummary(s); })
-      .catch(() => { if (!cancelled) setError("Notion에서 오늘 기록을 불러오지 못했습니다."); });
+      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
     return () => { cancelled = true; };
   }, []);
 

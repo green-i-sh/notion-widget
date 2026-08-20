@@ -42,10 +42,29 @@ export interface TimelineDay {
   entries: TimelineEntry[];
 }
 
+interface ErrorBody {
+  error?: string;
+  message?: string;
+  status?: number;
+  notionCode?: string;
+  databaseId?: string;
+  pageId?: string;
+}
+
+/** Renders the server's error JSON as-is — category, message, and where it happened. */
+function describeError(body: ErrorBody | null, status: number): string {
+  if (!body) return `요청 실패 (${status})`;
+  const parts = [body.error, body.message].filter(Boolean);
+  if (body.notionCode) parts.push(`[${body.notionCode}]`);
+  if (body.databaseId) parts.push(`DB ${body.databaseId}`);
+  return parts.length ? parts.join(" — ") : `요청 실패 (${status})`;
+}
+
 async function getJSON<T>(url: string): Promise<T> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`요청 실패 (${res.status})`);
-  return res.json();
+  const body = (await res.json().catch(() => null)) as (T & ErrorBody) | null;
+  if (!res.ok) throw new Error(describeError(body, res.status));
+  return body as T;
 }
 
 export function fetchToday(date?: string): Promise<TodaySummary> {
@@ -62,7 +81,10 @@ export async function toggleRoutine(pageId: string, routine: Routine, value: boo
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pageId, routine, value }),
   });
-  if (!res.ok) throw new Error(`저장 실패 (${res.status})`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as ErrorBody | null;
+    throw new Error(describeError(body, res.status));
+  }
 }
 
 export function fetchTimeline(date?: string): Promise<TimelineDay> {

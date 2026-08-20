@@ -1,6 +1,7 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types";
 import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "./_lib/notion";
 import { mondayOf, addDays, todayKST } from "./_lib/date";
+import { sendError } from "./_lib/http";
 
 const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
 const ROUTINES = ["Exercise", "Reading", "Organizing", "Other"] as const;
@@ -48,7 +49,7 @@ async function handleWeek(req: ApiRequest, res: ApiResponse) {
     res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
     res.status(200).json({ start, end: dates[6], days });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err, { endpoint: "routine", databaseId: DAILY_LOG_DB });
   }
 }
 
@@ -63,6 +64,6 @@ async function handleToggle(req: ApiRequest, res: ApiResponse) {
     await updatePageProperties(body.pageId, { [routine]: { checkbox: body.value } });
     res.status(200).json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err, { endpoint: "routine", databaseId: DAILY_LOG_DB, pageId: body.pageId, routine });
   }
 }

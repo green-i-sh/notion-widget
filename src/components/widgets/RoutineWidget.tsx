@@ -12,7 +12,7 @@ export function RoutineWidget() {
     let cancelled = false;
     fetchRoutineWeek()
       .then((week) => { if (!cancelled) setDays(week.days); })
-      .catch(() => { if (!cancelled) setError("Notion에서 루틴을 불러오지 못했습니다."); });
+      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
     return () => { cancelled = true; };
   }, []);
 
@@ -22,7 +22,7 @@ export function RoutineWidget() {
     setDays((prev) =>
       prev?.map((d) => (d.date === day.date ? { ...d, values: { ...d.values!, [routine]: next } } : d)) ?? prev
     );
-    toggleRoutine(day.pageId, routine, next).catch(() => setError("저장하지 못했습니다."));
+    toggleRoutine(day.pageId, routine, next).catch((err) => setError(err instanceof Error ? err.message : String(err)));
   };
 
   if (error) return <div className="error">{error}</div>;
