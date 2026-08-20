@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useAppState, actions } from "../../store/appStore";
+import { useAddForm } from "../../hooks/useAddForm";
 import type { ProgressItem } from "../../types";
 import { uid } from "../../utils/id";
 
 export function ProgressWidget() {
   const { data } = useAppState();
+  const { open, show, hide } = useAddForm();
   const [title, setTitle] = useState("");
 
   const add = () => {
@@ -47,10 +49,15 @@ export function ProgressWidget() {
         );
       })}
       {!data.progress.length && <div className="empty">목표를 추가해 보세요.</div>}
-      <div className="row">
-        <input value={title} placeholder="목표 이름" aria-label="목표 이름" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <button type="button" className="btn" onClick={add}>추가</button>
-      </div>
+      {open ? (
+        <div className="row">
+          <input value={title} placeholder="목표 이름" aria-label="목표 이름" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+          <button type="button" className="btn" onClick={add}>추가</button>
+          <button type="button" className="btn ghost" aria-label="입력 닫기" onClick={hide}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="btn add-toggle" onClick={show}>+ 추가</button>
+      )}
     </>
   );
 }

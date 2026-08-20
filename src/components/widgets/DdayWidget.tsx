@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAppState, actions } from "../../store/appStore";
+import { useAddForm } from "../../hooks/useAddForm";
 import { daysUntil, todayISO } from "../../utils/date";
 import { uid } from "../../utils/id";
 
@@ -13,6 +14,7 @@ function label(iso: string): string {
 
 export function DdayWidget() {
   const { data } = useAppState();
+  const { open, show, hide } = useAddForm();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(todayISO());
 
@@ -45,11 +47,16 @@ export function DdayWidget() {
         ))}
         {!data.ddays.length && <li className="empty">기념일을 추가해 보세요.</li>}
       </ul>
-      <div className="row">
-        <input value={title} placeholder="제목" aria-label="D-Day 제목" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="D-Day 날짜" style={{ maxWidth: 140 }} />
-        <button type="button" className="btn" onClick={add}>추가</button>
-      </div>
+      {open ? (
+        <div className="row">
+          <input value={title} placeholder="제목" aria-label="D-Day 제목" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="D-Day 날짜" style={{ maxWidth: 140 }} />
+          <button type="button" className="btn" onClick={add}>추가</button>
+          <button type="button" className="btn ghost" aria-label="입력 닫기" onClick={hide}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="btn add-toggle" onClick={show}>+ 추가</button>
+      )}
     </>
   );
 }

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAppState, actions } from "../../store/appStore";
+import { useAddForm } from "../../hooks/useAddForm";
 import { uid } from "../../utils/id";
 
 export function QuoteWidget() {
   const { data } = useAppState();
+  const { open, show, hide } = useAddForm();
   const [index, setIndex] = useState(0);
   const [text, setText] = useState("");
   const [author, setAuthor] = useState("");
@@ -36,11 +38,16 @@ export function QuoteWidget() {
       ) : (
         <div className="empty">문장을 추가해 보세요.</div>
       )}
-      <div className="row">
-        <input value={text} placeholder="문장" aria-label="문장" onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <input value={author} placeholder="작가" aria-label="작가" onChange={(e) => setAuthor(e.target.value)} style={{ maxWidth: 90 }} />
-        <button type="button" className="btn" onClick={add}>추가</button>
-      </div>
+      {open ? (
+        <div className="row">
+          <input value={text} placeholder="문장" aria-label="문장" onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+          <input value={author} placeholder="작가" aria-label="작가" onChange={(e) => setAuthor(e.target.value)} style={{ maxWidth: 90 }} />
+          <button type="button" className="btn" onClick={add}>추가</button>
+          <button type="button" className="btn ghost" aria-label="입력 닫기" onClick={hide}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="btn add-toggle" onClick={show}>+ 추가</button>
+      )}
     </>
   );
 }

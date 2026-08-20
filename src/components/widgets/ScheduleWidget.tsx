@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useAppState, actions } from "../../store/appStore";
+import { useAddForm } from "../../hooks/useAddForm";
 import { todayISO } from "../../utils/date";
 import { uid } from "../../utils/id";
 
 export function ScheduleWidget() {
   const { data } = useAppState();
+  const { open, show, hide } = useAddForm();
   const [date, setDate] = useState(todayISO());
   const [time, setTime] = useState("09:00");
   const [title, setTitle] = useState("");
@@ -49,11 +51,16 @@ export function ScheduleWidget() {
         ))}
         {!items.length && <li className="empty">이 날짜에 일정이 없습니다.</li>}
       </ul>
-      <div className="row">
-        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="새 일정 시간" style={{ maxWidth: 110 }} />
-        <input value={title} placeholder="일정" aria-label="새 일정 제목" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <button type="button" className="btn" onClick={add}>추가</button>
-      </div>
+      {open ? (
+        <div className="row">
+          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="새 일정 시간" style={{ maxWidth: 110 }} />
+          <input value={title} placeholder="일정" aria-label="새 일정 제목" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+          <button type="button" className="btn" onClick={add}>추가</button>
+          <button type="button" className="btn ghost" aria-label="입력 닫기" onClick={hide}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="btn add-toggle" onClick={show}>+ 추가</button>
+      )}
     </>
   );
 }

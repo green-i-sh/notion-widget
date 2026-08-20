@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAppState, actions } from "../../store/appStore";
+import { useAddForm } from "../../hooks/useAddForm";
 import { uid } from "../../utils/id";
 
 /** Accepts bare hosts and normalises them, rejects anything non-http. */
@@ -17,6 +18,7 @@ function normalise(raw: string): string | null {
 
 export function LinkWidget() {
   const { data } = useAppState();
+  const { open, show, hide } = useAddForm();
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,12 +45,19 @@ export function LinkWidget() {
         ))}
         {!data.links.length && <li className="empty">자주 가는 사이트를 등록해 보세요.</li>}
       </ul>
-      <div className="row">
-        <input value={label} placeholder="이름" aria-label="링크 이름" onChange={(e) => setLabel(e.target.value)} style={{ maxWidth: 100 }} />
-        <input value={url} placeholder="notion.so" aria-label="링크 주소" onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <button type="button" className="btn" onClick={add}>추가</button>
-      </div>
-      {error && <div className="error">{error}</div>}
+      {open ? (
+        <>
+          <div className="row">
+            <input value={label} placeholder="이름" aria-label="링크 이름" onChange={(e) => setLabel(e.target.value)} style={{ maxWidth: 100 }} />
+            <input value={url} placeholder="notion.so" aria-label="링크 주소" onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+            <button type="button" className="btn" onClick={add}>추가</button>
+            <button type="button" className="btn ghost" aria-label="입력 닫기" onClick={hide}>✕</button>
+          </div>
+          {error && <div className="error">{error}</div>}
+        </>
+      ) : (
+        <button type="button" className="btn add-toggle" onClick={show}>+ 추가</button>
+      )}
     </>
   );
 }

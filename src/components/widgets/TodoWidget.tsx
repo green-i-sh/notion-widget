@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAppState, actions } from "../../store/appStore";
+import { useAddForm } from "../../hooks/useAddForm";
 import type { TodoItem } from "../../types";
 import { uid } from "../../utils/id";
 
@@ -8,6 +9,7 @@ const PRIORITY_LABEL: Record<TodoItem["priority"], string> = { high: "높음", n
 
 export function TodoWidget() {
   const { data } = useAppState();
+  const { open, show, hide } = useAddForm();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TodoItem["priority"]>("normal");
 
@@ -57,15 +59,20 @@ export function TodoWidget() {
         {!todos.length && <li className="empty">할 일을 추가해 보세요.</li>}
       </ul>
 
-      <div className="row">
-        <input value={title} placeholder="할 일" aria-label="할 일" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <select value={priority} aria-label="우선순위" onChange={(e) => setPriority(e.target.value as TodoItem["priority"])} style={{ maxWidth: 90 }}>
-          <option value="high">높음</option>
-          <option value="normal">보통</option>
-          <option value="low">낮음</option>
-        </select>
-        <button type="button" className="btn" onClick={add}>추가</button>
-      </div>
+      {open ? (
+        <div className="row">
+          <input value={title} placeholder="할 일" aria-label="할 일" onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+          <select value={priority} aria-label="우선순위" onChange={(e) => setPriority(e.target.value as TodoItem["priority"])} style={{ maxWidth: 90 }}>
+            <option value="high">높음</option>
+            <option value="normal">보통</option>
+            <option value="low">낮음</option>
+          </select>
+          <button type="button" className="btn" onClick={add}>추가</button>
+          <button type="button" className="btn ghost" aria-label="입력 닫기" onClick={hide}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="btn add-toggle" onClick={show}>+ 추가</button>
+      )}
     </>
   );
 }
