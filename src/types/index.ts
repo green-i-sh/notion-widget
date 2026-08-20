@@ -14,7 +14,10 @@ export type WidgetType =
   | "stopwatch"
   | "link"
   | "image"
-  | "weather";
+  | "weather"
+  | "routine"
+  | "today"
+  | "timeline";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";

@@ -41,12 +41,15 @@ function defaultWidgets(): WidgetConfig[] {
     "link",
     "image",
     "weather",
+    "routine",
+    "today",
+    "timeline",
   ];
   return all.map((type, i) => ({
     id: `w-${type}`,
     type,
     visible: STARTER.includes(type),
-    size: type === "calendar" || type === "todo" ? "m" : "s",
+    size: type === "calendar" || type === "todo" || type === "timeline" ? "m" : "s",
     order: i,
     options: {},
   }));

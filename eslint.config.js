@@ -11,5 +11,9 @@ export default tseslint.config(
     languageOptions: { ecmaVersion: 2022, globals: globals.browser },
     plugins: { "react-hooks": reactHooks },
     rules: reactHooks.configs.recommended.rules,
+  },
+  {
+    files: ["api/**/*.ts"],
+    languageOptions: { globals: globals.node },
   }
 );

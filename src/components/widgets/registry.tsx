@@ -15,6 +15,9 @@ import { StopwatchWidget } from "./StopwatchWidget";
 import { LinkWidget } from "./LinkWidget";
 import { ImageWidget } from "./ImageWidget";
 import { WeatherWidget } from "./WeatherWidget";
+import { RoutineWidget } from "./RoutineWidget";
+import { TodayWidget } from "./TodayWidget";
+import { TimelineWidget } from "./TimelineWidget";
 
 /** Widgets receive their config; most ignore it. */
 export type WidgetProps = { config: WidgetConfig };
@@ -41,4 +44,7 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   link: { title: "Link", Component: LinkWidget },
   image: { title: "Image", Component: ImageWidget },
   weather: { title: "Weather", Component: WeatherWidget },
+  routine: { title: "Routine", Component: RoutineWidget },
+  today: { title: "Today", Component: TodayWidget },
+  timeline: { title: "Timeline", Component: TimelineWidget },
 };

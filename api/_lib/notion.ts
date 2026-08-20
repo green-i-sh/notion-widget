@@ -1,0 +1,77 @@
+const NOTION_VERSION = "2022-06-28";
+const API_BASE = "https://api.notion.com/v1";
+
+function authHeaders(): Record<string, string> {
+  const token = process.env.NOTION_TOKEN;
+  if (!token) throw new Error("NOTION_TOKEN이 설정되지 않았습니다.");
+  return {
+    Authorization: `Bearer ${token}`,
+    "Notion-Version": NOTION_VERSION,
+    "Content-Type": "application/json",
+  };
+}
+
+export async function queryDatabase(
+  databaseId: string,
+  body: Record<string, unknown>
+): Promise<{ results: { id: string; properties: Record<string, unknown> }[] }> {
+  const res = await fetch(`${API_BASE}/databases/${databaseId}/query`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Notion query 실패 (${res.status})`);
+  return res.json() as Promise<{ results: { id: string; properties: Record<string, unknown> }[] }>;
+}
+
+export async function updatePageProperties(
+  pageId: string,
+  properties: Record<string, unknown>
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/pages/${pageId}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ properties }),
+  });
+  if (!res.ok) throw new Error(`Notion 업데이트 실패 (${res.status})`);
+}
+
+/**
+ * Notion property readers. rollup values live at .rollup.number, formula
+ * values at .formula.number/.string — reading .number directly returns
+ * nothing for either, so each type is unwrapped explicitly.
+ */
+export function propNumber(prop: unknown): number {
+  const p = prop as { type?: string; rollup?: { number?: number }; formula?: { number?: number }; number?: number } | undefined;
+  const value =
+    p?.type === "rollup" ? p.rollup?.number
+    : p?.type === "formula" ? p.formula?.number
+    : p?.type === "number" ? p.number
+    : undefined;
+  return typeof value === "number" ? value : 0;
+}
+
+export function propString(prop: unknown): string {
+  const p = prop as {
+    type?: string;
+    formula?: { string?: string | null };
+    select?: { name?: string } | null;
+    title?: { plain_text: string }[];
+    rich_text?: { plain_text: string }[];
+  } | undefined;
+  if (p?.type === "formula") return p.formula?.string ?? "";
+  if (p?.type === "select") return p.select?.name ?? "";
+  if (p?.type === "title") return (p.title ?? []).map((t) => t.plain_text).join("");
+  if (p?.type === "rich_text") return (p.rich_text ?? []).map((t) => t.plain_text).join("");
+  return "";
+}
+
+export function propCheckbox(prop: unknown): boolean {
+  const p = prop as { type?: string; checkbox?: boolean } | undefined;
+  return p?.type === "checkbox" ? Boolean(p.checkbox) : false;
+}
+
+export function propDateStart(prop: unknown): string | null {
+  const p = prop as { type?: string; date?: { start?: string | null } | null } | undefined;
+  return p?.type === "date" ? p.date?.start ?? null : null;
+}

@@ -440,6 +440,37 @@ input[type="color"] {
   color: var(--surface);
 }
 
+.habit-cell:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.timeline {
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+
+.timeline-hour {
+  border-top: 1px solid var(--border);
+  font-size: 10.5px;
+  color: var(--subtext);
+  padding-top: 2px;
+}
+
+.timeline-block {
+  position: absolute;
+  left: 46px;
+  right: 2px;
+  background: var(--accent);
+  color: var(--surface);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .mono-time {
   font-family: var(--serif);
   font-size: 30px;

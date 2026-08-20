@@ -35,6 +35,21 @@ Notion API v1의 `/v1/databases/{id}/query`에 쓰는 값입니다.
 | Streak | `555ee768575c4882b24ef03f637a2622` |
 | Routine Check (미사용) | `09b68da4a1bb4991b907c6fa7921b951` |
 
+## 서버리스 함수
+
+토큰을 아는 코드는 `api/`뿐입니다. 브라우저는 `src/services/notion.ts`를 거쳐
+같은 origin의 `/api/*`만 부르고, Notion API는 함수 안에서만 호출됩니다.
+
+| 함수 | 메서드 | 하는 일 |
+|---|---|---|
+| `/api/today` | GET `?date=YYYY-MM-DD` (기본 오늘 KST) | Daily Log 한 행 요약 |
+| `/api/routine` | GET `?start=YYYY-MM-DD` (기본 이번 주 월요일) | 월~일 7일치 루틴 체크 상태 |
+| `/api/routine` | POST `{ pageId, routine, value }` | 체크박스 하나 토글 |
+| `/api/timeline` | GET `?date=YYYY-MM-DD` (기본 오늘 KST) | 그날 Time Log 전체 |
+
+응답에는 `Cache-Control: s-maxage=30, stale-while-revalidate=120`이 붙습니다 —
+여러 위젯이 동시에 떠 있어도 초당 3회 제한에 잘 안 걸립니다.
+
 ## 위젯별로 필요한 속성
 
 ### Daily Log — `?w=today`, `?w=routine`
