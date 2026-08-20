@@ -35,45 +35,6 @@ Notion API v1의 `/v1/databases/{id}/query`에 쓰는 값입니다.
 | Streak | `555ee768575c4882b24ef03f637a2622` |
 | Routine Check (미사용) | `09b68da4a1bb4991b907c6fa7921b951` |
 
-## 서버리스 함수
-
-토큰을 아는 코드는 `api/`뿐입니다. 브라우저는 `src/services/notion.ts`를 거쳐
-같은 origin의 `/api/*`만 부르고, Notion API는 함수 안에서만 호출됩니다.
-
-| 함수 | 메서드 | 하는 일 |
-|---|---|---|
-| `/api/today` | GET `?date=YYYY-MM-DD` (기본 오늘 KST) | Daily Log 한 행 요약 |
-| `/api/routine` | GET `?start=YYYY-MM-DD` (기본 이번 주 월요일) | 월~일 7일치 루틴 체크 상태 |
-| `/api/routine` | POST `{ pageId, routine, value }` | 체크박스 하나 토글 |
-| `/api/timeline` | GET `?date=YYYY-MM-DD` (기본 오늘 KST) | 그날 Time Log 전체 |
-| `/api/health` | GET | 토큰·DB 접근 진단 (아래) |
-
-응답에는 `Cache-Control: s-maxage=30, stale-while-revalidate=120`이 붙습니다 —
-여러 위젯이 동시에 떠 있어도 초당 3회 제한에 잘 안 걸립니다.
-
-에러는 삼키지 않고 그대로 내려줍니다: `{ error, message, status?, notionCode?, databaseId, pageId?, endpoint }`.
-`error`는 `"토큰 미설정"` / `"Notion API 오류"` / `"서버 오류"` 중 하나, `message`는
-토큰 미설정이면 그 사실, Notion 오류면 Notion이 준 메시지 그대로입니다.
-위젯은 이 문자열을 그대로 화면에 보여줍니다. Vercel 함수 로그에도 `console.error`로 남습니다.
-
-### 진단 — `GET /api/health`
-
-```json
-{
-  "tokenPresent": true,
-  "tokenPreview": "ntn_",
-  "dailyLogDb": "3c91cb4b5255486c98c6128f44650848",
-  "dbAccess": { "ok": true, "message": "OK" },
-  "rowCount": 12
-}
-```
-
-`tokenPreview`는 토큰 앞 4글자만 노출합니다(존재 확인용, 값 검증 아님).
-`dbAccess.ok`가 `false`면 `message`에 Notion이 준 이유가 그대로 들어있습니다 —
-대부분 "Could not find database..."면 인테그레이션이 그 DB(정확히는 상위 페이지)에
-Connections로 연결되지 않은 경우입니다. `?w=routine`이 원인 모를 에러만 보여줄 때
-가장 먼저 이 엔드포인트를 열어봅니다.
-
 ## 위젯별로 필요한 속성
 
 ### Daily Log — `?w=today`, `?w=routine`
