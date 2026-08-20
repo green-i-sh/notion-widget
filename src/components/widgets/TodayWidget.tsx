@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchToday, type TodaySummary } from "../../services/notion";
+import { EmbedRows } from "./shared/EmbedRows";
 
 function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
@@ -29,24 +30,22 @@ export function TodayWidget() {
   return (
     <>
       <div className="embed-title">Today · Monitoring</div>
-      <div className="today-row">
-        <span className="today-label">Tasks 완료</span>
-        <span className="today-value">{tasksDone} / {tasksTotal}</span>
-      </div>
-      <div className="today-row">
-        <span className="today-label">Tracked</span>
-        <span className="today-value">{formatMinutes(trackedMin)}</span>
-      </div>
-      <div className="today-row">
-        <span className="today-label">Expense</span>
-        <span className="today-value">₩{Math.abs(expense).toLocaleString()}</span>
-      </div>
-      <div className="today-row">
-        <span className="today-label">Morning Page</span>
-        <span className={`today-chip ${written ? "done" : "pending"}`}>
-          {written ? "작성 완료" : morningPage || "미작성"}
-        </span>
-      </div>
+      <EmbedRows
+        rows={[
+          { key: "tasks", label: "Tasks 완료", value: `${tasksDone} / ${tasksTotal}` },
+          { key: "tracked", label: "Tracked", value: formatMinutes(trackedMin) },
+          { key: "expense", label: "Expense", value: `₩${Math.abs(expense).toLocaleString()}` },
+          {
+            key: "morning",
+            label: "Morning Page",
+            value: (
+              <span className={`embed-chip ${written ? "green" : "gray"}`}>
+                {written ? "작성 완료" : morningPage || "미작성"}
+              </span>
+            ),
+          },
+        ]}
+      />
     </>
   );
 }

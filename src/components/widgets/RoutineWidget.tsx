@@ -3,6 +3,12 @@ import { WEEKDAYS_KO } from "../../utils/date";
 import { fetchRoutineWeek, toggleRoutine, type Routine, type RoutineDay } from "../../services/notion";
 
 const ROUTINES: Routine[] = ["Exercise", "Reading", "Organizing", "Other"];
+const ROUTINE_COLOR: Record<Routine, string> = {
+  Exercise: "lav",
+  Reading: "purple",
+  Organizing: "green",
+  Other: "gray",
+};
 
 export function RoutineWidget() {
   const [days, setDays] = useState<RoutineDay[] | null>(null);
@@ -32,11 +38,12 @@ export function RoutineWidget() {
     <>
       <div className="embed-title">Routine Check</div>
       {ROUTINES.map((routine) => {
+        const color = ROUTINE_COLOR[routine];
         const count = days.filter((d) => d.values?.[routine]).length;
         return (
           <div key={routine} className="routine-row">
             <div className="routine-head">
-              <span className="routine-chip">{routine}</span>
+              <span className={`embed-chip ${color}`}>{routine}</span>
               <span className="routine-count">{count} / 7</span>
             </div>
             <div className="routine-grid">
@@ -49,7 +56,7 @@ export function RoutineWidget() {
                   <button
                     key={day.date}
                     type="button"
-                    className={`routine-cell${on ? " on" : ""}`}
+                    className={`routine-cell${on ? ` on ${color}` : ""}`}
                     aria-pressed={on}
                     aria-label={`${routine} ${day.date}`}
                     onClick={() => toggle(day, routine)}

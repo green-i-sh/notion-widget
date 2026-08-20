@@ -18,6 +18,8 @@
   --rule: #e8e8ec;
   --lav-bg: #e8eaf6;
   --lav-ink: #5b62a8;
+  --purple-bg: #ede9f6;
+  --purple-ink: #6a5aa8;
   --green-bg: #e6f2ea;
   --green-ink: #3d7a56;
   --gray-bg: #f1f1f4;
@@ -205,7 +207,7 @@ body {
 
 .embed-chip {
   display: inline-block;
-  border-radius: 999px;
+  border-radius: 4px;
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 500;
@@ -216,12 +218,17 @@ body {
   color: var(--lav-ink);
 }
 
-.embed-chip.done {
+.embed-chip.purple {
+  background: var(--purple-bg);
+  color: var(--purple-ink);
+}
+
+.embed-chip.green {
   background: var(--green-bg);
   color: var(--green-ink);
 }
 
-.embed-chip.pending {
+.embed-chip.gray {
   background: var(--gray-bg);
   color: var(--gray-ink);
 }
@@ -575,16 +582,6 @@ input[type="color"] {
   gap: 8px;
 }
 
-.routine-chip {
-  display: inline-block;
-  background: #e8eaf6;
-  color: #283593;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 12.5px;
-  font-weight: 500;
-}
-
 .routine-count {
   color: var(--subtext);
   font-size: 12px;
@@ -597,7 +594,7 @@ input[type="color"] {
 }
 
 .routine-cell {
-  aspect-ratio: 1 / 1;
+  height: 26px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface);
@@ -610,57 +607,33 @@ input[type="color"] {
 }
 
 .routine-cell.on {
-  background: #e8eaf6;
-  border-color: #c5cae9;
-  color: #283593;
+  border-color: transparent;
   font-weight: 600;
+}
+
+.routine-cell.on.lav {
+  background: var(--lav-bg);
+  color: var(--lav-ink);
+}
+
+.routine-cell.on.purple {
+  background: var(--purple-bg);
+  color: var(--purple-ink);
+}
+
+.routine-cell.on.green {
+  background: var(--green-bg);
+  color: var(--green-ink);
+}
+
+.routine-cell.on.gray {
+  background: var(--gray-bg);
+  color: var(--gray-ink);
 }
 
 .routine-cell:disabled {
   opacity: 0.35;
   cursor: default;
-}
-
-/* ---- today (Notion-backed, ?w=today) ---- */
-
-.today-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.today-row:last-child {
-  border-bottom: 0;
-}
-
-.today-label {
-  color: var(--subtext);
-  font-size: 12.5px;
-}
-
-.today-value {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.today-chip {
-  display: inline-block;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.today-chip.done {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.today-chip.pending {
-  background: #eeeeee;
-  color: #757575;
 }
 
 .timeline {
