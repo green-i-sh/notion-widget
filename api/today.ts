@@ -1,15 +1,14 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types.js";
 import { queryDatabase, propNumber, propString } from "./_lib/notion.js";
 import { todayKST } from "./_lib/date.js";
-import { sendError } from "./_lib/http.js";
-
-const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
+import { sendError, withCache } from "./_lib/http.js";
+import { DB } from "./_lib/db.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const date = typeof req.query.date === "string" ? req.query.date : todayKST();
 
   try {
-    const result = await queryDatabase(DAILY_LOG_DB, {
+    const result = await queryDatabase(DB.dailyLog, {
       filter: { property: "Date", date: { equals: date } },
       page_size: 1,
     });
@@ -20,7 +19,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     }
 
     const props = page.properties;
-    res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
+    withCache(res);
     res.status(200).json({
       date,
       found: true,
@@ -31,6 +30,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       morningPage: propString(props["Morning Page"]),
     });
   } catch (err) {
-    sendError(res, err, { endpoint: "today", databaseId: DAILY_LOG_DB });
+    sendError(res, err, { endpoint: "today", databaseId: DB.dailyLog });
   }
 }

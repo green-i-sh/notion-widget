@@ -11,6 +11,21 @@
   --serif: "Nanum Myeongjo", Georgia, "Times New Roman", serif;
   --sans: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
     "Segoe UI", Roboto, sans-serif;
+
+  /* Fixed palette for Notion-embedded widgets (WIDGET-SPEC.md). Not part of
+     the theme system on purpose — these read as Notion content, not a
+     dashboard card, so they don't follow the user's dashboard theme. */
+  --rule: #e8e8ec;
+  --lav-bg: #e8eaf6;
+  --lav-ink: #5b62a8;
+  --green-bg: #e6f2ea;
+  --green-ink: #3d7a56;
+  --gray-bg: #f1f1f4;
+  --gray-ink: #9b9ea6;
+  --pink-bg: #fbe9ee;
+  --pink-ink: #a8506b;
+  --yellow-bg: #fdf3dd;
+  --yellow-ink: #8a6d2f;
 }
 
 * {
@@ -136,6 +151,89 @@ body {
   font-family: var(--serif);
   font-size: 14px;
   color: var(--text);
+}
+
+/* ---- embed design system — Pattern A/B (WIDGET-SPEC.md §0) ---- */
+
+.embed-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.embed-row-label {
+  color: var(--subtext);
+  font-size: 13.5px;
+}
+
+.embed-row-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.embed-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+@media (max-width: 480px) {
+  .embed-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.embed-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.embed-stat-value {
+  font-family: var(--serif);
+  font-size: 28px;
+}
+
+.embed-stat-caption {
+  font-size: 12px;
+  color: var(--subtext);
+}
+
+.embed-chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.embed-chip.lav {
+  background: var(--lav-bg);
+  color: var(--lav-ink);
+}
+
+.embed-chip.done {
+  background: var(--green-bg);
+  color: var(--green-ink);
+}
+
+.embed-chip.pending {
+  background: var(--gray-bg);
+  color: var(--gray-ink);
+}
+
+.embed-chip.pink {
+  background: var(--pink-bg);
+  color: var(--pink-ink);
+}
+
+.embed-chip.yellow {
+  background: var(--yellow-bg);
+  color: var(--yellow-ink);
 }
 
 .widget-head {

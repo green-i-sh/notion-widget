@@ -1,9 +1,8 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types.js";
 import { queryDatabase, propNumber, propString, propDateStart } from "./_lib/notion.js";
 import { todayKST, addDays } from "./_lib/date.js";
-import { sendError } from "./_lib/http.js";
-
-const TIME_LOG_DB = "6b79332a8eea457f94560296f866f214";
+import { sendError, withCache } from "./_lib/http.js";
+import { DB } from "./_lib/db.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const date = typeof req.query.date === "string" ? req.query.date : todayKST();
@@ -11,7 +10,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const endISO = `${addDays(date, 1)}T00:00:00+09:00`;
 
   try {
-    const result = await queryDatabase(TIME_LOG_DB, {
+    const result = await queryDatabase(DB.timeLog, {
       filter: {
         and: [
           { property: "Start", date: { on_or_after: startISO } },
@@ -37,9 +36,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       };
     });
 
-    res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
+    withCache(res);
     res.status(200).json({ date, totalMin, entries });
   } catch (err) {
-    sendError(res, err, { endpoint: "timeline", databaseId: TIME_LOG_DB });
+    sendError(res, err, { endpoint: "timeline", databaseId: DB.timeLog });
   }
 }

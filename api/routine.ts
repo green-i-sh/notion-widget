@@ -1,9 +1,9 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types.js";
 import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "./_lib/notion.js";
 import { mondayOf, addDays, todayKST } from "./_lib/date.js";
-import { sendError } from "./_lib/http.js";
+import { sendError, withCache } from "./_lib/http.js";
+import { DB } from "./_lib/db.js";
 
-const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
 const ROUTINES = ["Exercise", "Reading", "Organizing", "Other"] as const;
 type Routine = (typeof ROUTINES)[number];
 
@@ -21,7 +21,7 @@ async function handleWeek(req: ApiRequest, res: ApiResponse) {
   const dates = Array.from({ length: 7 }, (_, i) => addDays(start, i));
 
   try {
-    const result = await queryDatabase(DAILY_LOG_DB, {
+    const result = await queryDatabase(DB.dailyLog, {
       filter: {
         and: [
           { property: "Date", date: { on_or_after: start } },
@@ -46,10 +46,10 @@ async function handleWeek(req: ApiRequest, res: ApiResponse) {
       return { date, pageId: page.id, values };
     });
 
-    res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
+    withCache(res);
     res.status(200).json({ start, end: dates[6], days });
   } catch (err) {
-    sendError(res, err, { endpoint: "routine", databaseId: DAILY_LOG_DB });
+    sendError(res, err, { endpoint: "routine", databaseId: DB.dailyLog });
   }
 }
 
@@ -64,6 +64,6 @@ async function handleToggle(req: ApiRequest, res: ApiResponse) {
     await updatePageProperties(body.pageId, { [routine]: { checkbox: body.value } });
     res.status(200).json({ ok: true });
   } catch (err) {
-    sendError(res, err, { endpoint: "routine", databaseId: DAILY_LOG_DB, pageId: body.pageId, routine });
+    sendError(res, err, { endpoint: "routine", databaseId: DB.dailyLog, pageId: body.pageId, routine });
   }
 }

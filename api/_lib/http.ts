@@ -2,6 +2,14 @@ import type { ApiResponse } from "./types.js";
 import { TokenMissingError, NotionApiError } from "./notion.js";
 
 /**
+ * Notion's rate limit is ~3 req/s and every open widget queries on its own,
+ * so GET responses get a short CDN cache. 30s default, matching WIDGET-SPEC.md.
+ */
+export function withCache(res: ApiResponse, seconds = 30): void {
+  res.setHeader("Cache-Control", `s-maxage=${seconds}, stale-while-revalidate=${seconds * 4}`);
+}
+
+/**
  * Logs the real error to the Vercel function log and sends it to the client
  * as-is — no swallowing into a generic "요청 실패". `context` carries which
  * DB/page/endpoint was involved so the failure is traceable from the response alone.

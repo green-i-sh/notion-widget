@@ -1,7 +1,6 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types.js";
 import { queryDatabase, NotionApiError } from "./_lib/notion.js";
-
-const DAILY_LOG_DB = "3c91cb4b5255486c98c6128f44650848";
+import { DB } from "./_lib/db.js";
 
 export default async function handler(_req: ApiRequest, res: ApiResponse) {
   const token = process.env.NOTION_TOKEN;
@@ -12,7 +11,7 @@ export default async function handler(_req: ApiRequest, res: ApiResponse) {
     res.status(200).json({
       tokenPresent: false,
       tokenPreview: null,
-      dailyLogDb: DAILY_LOG_DB,
+      dailyLogDb: DB.dailyLog,
       dbAccess: { ok: false, message: "NOTION_TOKEN이 설정되지 않았습니다." },
       rowCount: 0,
     });
@@ -20,20 +19,20 @@ export default async function handler(_req: ApiRequest, res: ApiResponse) {
   }
 
   try {
-    const result = await queryDatabase(DAILY_LOG_DB, {});
+    const result = await queryDatabase(DB.dailyLog, {});
     res.status(200).json({
       tokenPresent: true,
       tokenPreview,
-      dailyLogDb: DAILY_LOG_DB,
+      dailyLogDb: DB.dailyLog,
       dbAccess: { ok: true, message: "OK" },
       rowCount: result.results.length,
     });
   } catch (err) {
-    console.error("[api/health]", { databaseId: DAILY_LOG_DB }, err);
+    console.error("[api/health]", { databaseId: DB.dailyLog }, err);
     res.status(200).json({
       tokenPresent: true,
       tokenPreview,
-      dailyLogDb: DAILY_LOG_DB,
+      dailyLogDb: DB.dailyLog,
       dbAccess: {
         ok: false,
         status: err instanceof NotionApiError ? err.status : undefined,
