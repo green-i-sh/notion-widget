@@ -206,3 +206,46 @@ export interface ShelfRow {
 export function fetchShelf(opts?: FetchOpts): Promise<{ rows: ShelfRow[] }> {
   return getJSON("/api/shelf", opts);
 }
+
+export interface CategoryRow {
+  category: string;
+  amount: number;
+  delta: number;
+}
+
+export interface CategoryData {
+  month: string;
+  rows: CategoryRow[];
+  total: number;
+}
+
+export function fetchCategory(month?: string, opts?: FetchOpts): Promise<CategoryData> {
+  return getJSON(withQuery("/api/category", { month }), opts);
+}
+
+export interface TripColumn {
+  key: string;
+  label: string;
+  text: string;
+  tag: string;
+}
+
+export interface TripData {
+  found: boolean;
+  name?: string;
+  phase?: string;
+  columns?: TripColumn[];
+}
+
+export function fetchTrip(trip?: string, opts?: FetchOpts): Promise<TripData> {
+  return getJSON(withQuery("/api/trip", { trip }), opts);
+}
+
+export interface StreakData {
+  month: string;
+  streakDays: number;
+}
+
+export function fetchStreak(opts?: FetchOpts): Promise<StreakData> {
+  return getJSON("/api/streak", opts);
+}

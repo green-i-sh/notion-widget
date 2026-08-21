@@ -24,6 +24,9 @@ import { FinanceMonthWidget } from "./FinanceMonthWidget";
 import { LifeWidget } from "./LifeWidget";
 import { ReviewWidget } from "./ReviewWidget";
 import { ShelfWidget } from "./ShelfWidget";
+import { CategoryWidget } from "./CategoryWidget";
+import { TripWidget } from "./TripWidget";
+import { StreakWidget } from "./StreakWidget";
 
 /** Widgets receive their config; most ignore it. */
 export type WidgetProps = { config: WidgetConfig };
@@ -61,4 +64,7 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   life: { title: "Life", Component: LifeWidget, flush: true },
   review: { title: "Review", Component: ReviewWidget, flush: true },
   shelf: { title: "Shelf", Component: ShelfWidget, flush: true },
+  category: { title: "By Category", Component: CategoryWidget, flush: true },
+  trip: { title: "Trip", Component: TripWidget, flush: true },
+  streak: { title: "Streak", Component: StreakWidget, flush: true },
 };

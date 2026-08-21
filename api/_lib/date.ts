@@ -22,6 +22,13 @@ export function monthOf(iso: string = todayKST()): string {
   return iso.slice(0, 7).replace("-", ".");
 }
 
+/** The "YYYY.MM" one calendar month before the given "YYYY.MM". */
+export function prevMonthOf(month: string): string {
+  const [y, m] = month.split(".").map(Number);
+  const d = new Date(Date.UTC(y, m - 2, 1));
+  return `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 /** Monday of the week containing the given YYYY-MM-DD date. */
 export function mondayOf(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);

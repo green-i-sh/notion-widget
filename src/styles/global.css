@@ -697,6 +697,28 @@ input[type="color"] {
   text-overflow: ellipsis;
 }
 
+/* ---- trip (Notion-backed, ?w=trip) ---- */
+
+.trip-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+}
+
+@media (max-width: 560px) {
+  .trip-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trip-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+}
+
 .mono-time {
   font-family: var(--serif);
   font-size: 30px;

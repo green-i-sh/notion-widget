@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, propNumber, propDateRange } from "./_lib/notion.js";
+import { queryDatabase, propNumber, propString, propDateRange } from "./_lib/notion.js";
 import { monthOf } from "./_lib/date.js";
 import { sendError, withCache } from "./_lib/http.js";
 import { DB } from "./_lib/db.js";
@@ -37,10 +37,8 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
       },
       page_size: 100,
     }),
-    queryDatabase(DB.life, {
-      filter: { property: "Month", formula: { string: { equals: month } } },
-      page_size: 100,
-    }),
+    // Life's Month property type isn't confirmed (see api/life.ts) — fetch and match in JS.
+    queryDatabase(DB.life, { page_size: 100 }),
     queryDatabase(DB.budget, {
       filter: { property: "Month", rich_text: { equals: month } },
       page_size: 1,
@@ -63,6 +61,7 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
     expense += Math.abs(propNumber(p["Expense"]));
   }
 
+  const lifeCount = life.results.filter((p) => propString(p.properties["Month"]) === month).length;
   const budgetTotal = budget.results[0] ? propNumber(budget.results[0].properties["Budget"]) : null;
   const bingoDone = bingo.results.filter((p) => {
     const done = p.properties["Done"] as { type?: string; checkbox?: boolean } | undefined;
@@ -73,7 +72,7 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
     { key: "tasks", label: "Tasks", value: `${tasksDone} / ${tasksTotal}`, caption: "완료 / 전체" },
     { key: "tracked", label: "Tracked", value: hours(trackedMin), caption: "기록된 시간" },
     { key: "expense", label: "Expense", value: won(expense), caption: budgetTotal != null ? `예산 ${won(budgetTotal)}` : "예산 없음" },
-    { key: "life", label: "Life", value: `${life.results.length}건`, caption: `Bingo ${bingoDone} / ${bingo.results.length}` },
+    { key: "life", label: "Life", value: `${lifeCount}건`, caption: `Bingo ${bingoDone} / ${bingo.results.length}` },
   ];
 }
 

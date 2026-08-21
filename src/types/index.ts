@@ -23,7 +23,10 @@ export type WidgetType =
   | "finance-month"
   | "life"
   | "review"
-  | "shelf";
+  | "shelf"
+  | "category"
+  | "trip"
+  | "streak";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";

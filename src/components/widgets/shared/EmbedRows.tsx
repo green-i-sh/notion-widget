@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export interface EmbedRowItem {
   key: string;
-  label: string;
+  label: ReactNode;
   value: ReactNode;
 }
 

@@ -16,15 +16,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const month = typeof req.query.month === "string" ? req.query.month : monthOf();
 
   try {
-    const result = await queryDatabase(DB.life, {
-      filter: { property: "Month", formula: { string: { equals: month } } },
-      page_size: 100,
-    });
+    // Month's exact property type isn't documented in NOTION.md (unlike Finance/Budget) —
+    // filtering server-side risks a 400 if the guess is wrong, so fetch and match in JS instead.
+    const result = await queryDatabase(DB.life, { page_size: 100 });
 
-    const rows = result.results.map((page) => ({
-      name: propString(page.properties["Name"]),
-      groups: propMultiSelect(page.properties["Group"]),
-    }));
+    const rows = result.results
+      .map((page) => ({
+        name: propString(page.properties["Name"]),
+        month: propString(page.properties["Month"]),
+        groups: propMultiSelect(page.properties["Group"]),
+      }))
+      .filter((r) => r.month === month);
 
     const stats = BUCKETS.map((b) => {
       const matches = rows.filter((r) => r.groups.some((g) => (b.tags as readonly string[]).includes(g)));
