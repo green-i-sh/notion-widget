@@ -1,8 +1,8 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, propNumber, propString, propDateRange } from "./_lib/notion.js";
-import { monthOf } from "./_lib/date.js";
-import { sendError, withCache } from "./_lib/http.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { queryDatabase, propNumber, propString, propDateRange } from "../notion.js";
+import { monthOf } from "../date.js";
+import { sendError, withCache } from "../http.js";
+import { DB } from "../db.js";
 
 interface Stat {
   key: string;
@@ -37,7 +37,7 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
       },
       page_size: 100,
     }),
-    // Life's Month property type isn't confirmed (see api/life.ts) — fetch and match in JS.
+    // Life's Month property type isn't confirmed (see routes/life.ts) — fetch and match in JS.
     queryDatabase(DB.life, { page_size: 100 }),
     queryDatabase(DB.budget, {
       filter: { property: "Month", rich_text: { equals: month } },

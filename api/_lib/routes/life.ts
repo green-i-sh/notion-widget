@@ -1,8 +1,8 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, propString, propMultiSelect } from "./_lib/notion.js";
-import { monthOf } from "./_lib/date.js";
-import { sendError, withCache } from "./_lib/http.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { queryDatabase, propString, propMultiSelect } from "../notion.js";
+import { monthOf } from "../date.js";
+import { sendError, withCache } from "../http.js";
+import { DB } from "../db.js";
 
 /** Life's `Group` multi-select collapses onto 4 display buckets — 전시/취미 share one column in the mockup. */
 const BUCKETS = [

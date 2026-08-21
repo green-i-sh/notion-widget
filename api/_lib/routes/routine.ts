@@ -1,8 +1,8 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "./_lib/notion.js";
-import { mondayOf, addDays, todayKST } from "./_lib/date.js";
-import { sendError, withCache } from "./_lib/http.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "../notion.js";
+import { mondayOf, addDays, todayKST } from "../date.js";
+import { sendError, withCache } from "../http.js";
+import { DB } from "../db.js";
 
 const ROUTINES = ["Exercise", "Reading", "Organizing", "Other"] as const;
 type Routine = (typeof ROUTINES)[number];

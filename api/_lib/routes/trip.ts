@@ -1,7 +1,7 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, propString } from "./_lib/notion.js";
-import { sendError, withCache } from "./_lib/http.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { queryDatabase, propString } from "../notion.js";
+import { sendError, withCache } from "../http.js";
+import { DB } from "../db.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const tripName = typeof req.query.trip === "string" ? req.query.trip : undefined;

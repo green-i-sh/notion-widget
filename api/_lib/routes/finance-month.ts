@@ -1,8 +1,8 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { computeMonthFinance } from "./_lib/finance.js";
-import { monthOf } from "./_lib/date.js";
-import { sendError, withCache } from "./_lib/http.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { computeMonthFinance } from "../finance.js";
+import { monthOf } from "../date.js";
+import { sendError, withCache } from "../http.js";
+import { DB } from "../db.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const month = typeof req.query.month === "string" ? req.query.month : monthOf();

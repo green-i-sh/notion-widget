@@ -1,7 +1,7 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, propString, propDateRange } from "./_lib/notion.js";
-import { sendError, withCache } from "./_lib/http.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { queryDatabase, propString, propDateRange } from "../notion.js";
+import { sendError, withCache } from "../http.js";
+import { DB } from "../db.js";
 
 function formatMD(iso: string | null): string {
   const m = iso ? /^\d{4}-(\d{2})-(\d{2})/.exec(iso) : null;

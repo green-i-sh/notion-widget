@@ -1,6 +1,6 @@
-import type { ApiRequest, ApiResponse } from "./_lib/types.js";
-import { queryDatabase, NotionApiError } from "./_lib/notion.js";
-import { DB } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "../types.js";
+import { queryDatabase, NotionApiError } from "../notion.js";
+import { DB } from "../db.js";
 
 export default async function handler(_req: ApiRequest, res: ApiResponse) {
   const token = process.env.NOTION_TOKEN;
