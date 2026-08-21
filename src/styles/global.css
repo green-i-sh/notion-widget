@@ -171,7 +171,7 @@ body {
 
 .embed-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--embed-stats-cols, 4), 1fr);
   gap: var(--gap);
 }
 
@@ -634,7 +634,7 @@ input[type="color"] {
 
 .bingo-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--gap);
 }
 
@@ -717,6 +717,55 @@ input[type="color"] {
   gap: 6px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--rule);
+}
+
+/* ---- morning (Notion-backed, ?w=morning) ---- */
+
+.morning-cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap);
+}
+
+@media (max-width: 560px) {
+  .morning-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.morning-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--radius);
+}
+
+.morning-col.lav {
+  background: var(--lav-bg);
+}
+
+.morning-col.gray {
+  background: var(--gray-bg);
+}
+
+.morning-col textarea {
+  background: transparent;
+  border: none;
+  padding: 0;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.morning-col textarea:focus-visible {
+  outline: none;
+}
+
+/* ---- meta (Notion-backed, ?w=meta) ---- */
+
+.meta-line {
+  font-size: 11px;
+  color: var(--subtext);
 }
 
 .mono-time {

@@ -61,6 +61,11 @@ export async function updatePageProperties(
   if (!res.ok) await throwNotionError(res);
 }
 
+/** rich_text property payload for a page update — an empty string clears the property. */
+export function richTextProperty(value: string): { rich_text: { text: { content: string } }[] } {
+  return { rich_text: value ? [{ text: { content: value } }] : [] };
+}
+
 export async function retrievePage(pageId: string): Promise<{ id: string; properties: Record<string, unknown> }> {
   const res = await fetch(`${API_BASE}/pages/${pageId}`, {
     method: "GET",

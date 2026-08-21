@@ -249,3 +249,31 @@ export interface StreakData {
 export function fetchStreak(opts?: FetchOpts): Promise<StreakData> {
   return getJSON("/api/streak", opts);
 }
+
+export type MorningField = "morning" | "log";
+
+export interface MorningData {
+  date: string;
+  found: boolean;
+  morning: string;
+  log: string;
+}
+
+export function fetchMorning(date?: string, opts?: FetchOpts): Promise<MorningData> {
+  return getJSON(withQuery("/api/morning", { date }), opts);
+}
+
+export function saveMorningField(date: string, field: MorningField, value: string): Promise<void> {
+  return postJSON("/api/morning", { date, field, value });
+}
+
+export type MetaKind = "today" | "finance" | "life" | "books" | "bingo";
+
+export interface MetaData {
+  kind: string;
+  text: string;
+}
+
+export function fetchMeta(kind: MetaKind, opts?: FetchOpts): Promise<MetaData> {
+  return getJSON(withQuery("/api/meta", { kind }), opts);
+}

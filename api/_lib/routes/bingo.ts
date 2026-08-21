@@ -1,5 +1,6 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { queryDatabase, updatePageProperties, propNumber, propString, propCheckbox } from "../notion.js";
+import { updatePageProperties } from "../notion.js";
+import { fetchBingoRows, latestBoard } from "../bingo.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
 
@@ -16,24 +17,8 @@ async function handleBoard(req: ApiRequest, res: ApiResponse) {
   const label = boardParam.toLowerCase() === "quarterly" ? "Quarterly" : "Monthly";
 
   try {
-    const result = await queryDatabase(DB.bingo, {
-      sorts: [{ property: "No", direction: "ascending" }],
-      page_size: 100,
-    });
-
-    const rows = result.results.map((page) => ({
-      id: page.id,
-      name: propString(page.properties["Name"]),
-      board: propString(page.properties["Board"]),
-      no: propNumber(page.properties["No"]),
-      done: propCheckbox(page.properties["Done"]),
-    }));
-
-    // Multiple boards of the same kind can pile up over time (a new "2026.09
-    // Monthly" each month) — take the most recent one, not every match.
-    const matching = rows.filter((r) => r.board.includes(label));
-    const board = matching.reduce((max, r) => (r.board > max ? r.board : max), "");
-    const items = matching.filter((r) => r.board === board).sort((a, b) => a.no - b.no);
+    const rows = await fetchBingoRows();
+    const { board, items } = latestBoard(rows, label);
 
     withCache(res);
     res.status(200).json({ board, items, done: items.filter((i) => i.done).length, total: items.length });

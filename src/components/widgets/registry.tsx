@@ -27,6 +27,8 @@ import { ShelfWidget } from "./ShelfWidget";
 import { CategoryWidget } from "./CategoryWidget";
 import { TripWidget } from "./TripWidget";
 import { StreakWidget } from "./StreakWidget";
+import { MorningWidget } from "./MorningWidget";
+import { MetaWidget } from "./MetaWidget";
 
 /** Widgets receive their config; most ignore it. */
 export type WidgetProps = { config: WidgetConfig };
@@ -67,4 +69,6 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   category: { title: "By Category", Component: CategoryWidget, flush: true },
   trip: { title: "Trip", Component: TripWidget, flush: true },
   streak: { title: "Streak", Component: StreakWidget, flush: true },
+  morning: { title: "Morning", Component: MorningWidget, flush: true },
+  meta: { title: "Meta", Component: MetaWidget, flush: true },
 };

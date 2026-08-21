@@ -14,5 +14,5 @@ export function ReviewWidget() {
   if (!data) return <div className="empty">불러오는 중</div>;
   if (!data.found) return <div className="empty">{data.type} Review가 아직 없습니다.</div>;
 
-  return <EmbedStats stats={data.stats} />;
+  return <EmbedStats stats={data.stats} columns={3} />;
 }

@@ -69,7 +69,7 @@ async function main() {
     assert.equal(b.path, "nope");
     assert.equal(b.url, "/api/nope");
     assert.equal(b.availableRoutes.length, Object.keys(ROUTES).length);
-    assert.equal(b.availableRoutes.length, 13, `expected 13 routes, got ${b.availableRoutes.length}: ${b.availableRoutes}`);
+    assert.equal(b.availableRoutes.length, 15, `expected 15 routes, got ${b.availableRoutes.length}: ${b.availableRoutes}`);
     console.log("PASS  /api/nope -> 404 with availableRoutes:", b.availableRoutes);
   }
 
