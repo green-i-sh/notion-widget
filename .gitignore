@@ -1,5 +1,6 @@
 node_modules
 dist
+.tmp-api-build
 .DS_Store
 *.local
 *.tsbuildinfo

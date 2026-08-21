@@ -19,7 +19,7 @@ import streak from "./_lib/routes/streak.js";
  * that once WIDGET-SPEC.md's widgets added up. Routing in-process here means
  * the function count stays at 1 no matter how many endpoints get added.
  */
-const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promise<void>> = {
+export const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promise<void>> = {
   health,
   today,
   routine,
@@ -35,13 +35,38 @@ const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promise<void
   streak,
 };
 
+/**
+ * Vite's Vercel preset doesn't always populate req.query.route for the
+ * [...route] catch-all the way Next.js does, so req.url is the only thing
+ * we can trust — parse the first path segment after /api/ ourselves.
+ * Strips the querystring/hash and any trailing slash first.
+ */
+export function routeNameFromUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  const pathname = url.split("?")[0].split("#")[0].replace(/\/+$/, "");
+  const segments = pathname.split("/").filter(Boolean);
+  const apiIndex = segments.lastIndexOf("api");
+  const rest = apiIndex >= 0 ? segments.slice(apiIndex + 1) : segments;
+  return rest[0];
+}
+
+function routeName(req: ApiRequest): string | undefined {
+  const fromQuery = req.query.route;
+  const queryName = Array.isArray(fromQuery) ? fromQuery[0] : fromQuery;
+  return queryName || routeNameFromUrl(req.url);
+}
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const segments = req.query.route;
-  const name = Array.isArray(segments) ? segments[0] : segments;
+  const name = routeName(req);
   const route = name ? ROUTES[name] : undefined;
 
   if (!route) {
-    res.status(404).json({ error: "존재하지 않는 API입니다.", path: name ?? null });
+    res.status(404).json({
+      error: "존재하지 않는 API입니다.",
+      path: name ?? null,
+      url: req.url ?? null,
+      availableRoutes: Object.keys(ROUTES),
+    });
     return;
   }
   await route(req, res);
