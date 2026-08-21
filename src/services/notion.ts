@@ -210,7 +210,8 @@ export function fetchShelf(opts?: FetchOpts): Promise<{ rows: ShelfRow[] }> {
 export interface CategoryRow {
   category: string;
   amount: number;
-  delta: number;
+  /** null when the previous month had no data for this category — nothing to compare against. */
+  delta: number | null;
 }
 
 export interface CategoryData {
@@ -227,7 +228,6 @@ export interface TripColumn {
   key: string;
   label: string;
   text: string;
-  tag: string;
 }
 
 export interface TripData {

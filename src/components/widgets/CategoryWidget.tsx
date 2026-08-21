@@ -21,7 +21,8 @@ function won(n: number): string {
   return `₩${Math.round(Math.abs(n)).toLocaleString()}`;
 }
 
-function deltaText(delta: number): string {
+function deltaText(delta: number | null): string {
+  if (delta === null) return "—";
   if (delta === 0) return "±0";
   return `${delta > 0 ? "+" : "-"}${Math.round(Math.abs(delta)).toLocaleString()}`;
 }
@@ -40,7 +41,7 @@ export function CategoryWidget() {
     value: (
       <span className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
         <span>−{won(r.amount)}</span>
-        <span className="muted" style={r.delta > 0 ? { color: "var(--pink-ink)" } : undefined}>
+        <span className="muted" style={r.delta !== null && r.delta > 0 ? { color: "var(--pink-ink)" } : undefined}>
           {deltaText(r.delta)}
         </span>
       </span>

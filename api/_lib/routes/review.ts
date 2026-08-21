@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { queryDatabase, propNumber, propString, propDateRange } from "../notion.js";
+import { queryDatabase, retrievePage, propNumber, propString, propDateRange, propRelation } from "../notion.js";
 import { monthOf } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
@@ -43,10 +43,10 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
       filter: { property: "Month", rich_text: { equals: month } },
       page_size: 1,
     }),
-    queryDatabase(DB.bingo, {
-      filter: { property: "Board", select: { equals: `${month} Monthly` } },
-      page_size: 100,
-    }),
+    // Board is a select — Notion validates `equals` against the option list and
+    // 400s the whole request for a board that doesn't exist yet (e.g. next
+    // month's), so fetch unfiltered and match in JS instead.
+    queryDatabase(DB.bingo, { page_size: 100 }),
   ]);
 
   let tasksDone = 0;
@@ -63,7 +63,8 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
 
   const lifeCount = life.results.filter((p) => propString(p.properties["Month"]) === month).length;
   const budgetTotal = budget.results[0] ? propNumber(budget.results[0].properties["Budget"]) : null;
-  const bingoDone = bingo.results.filter((p) => {
+  const monthBingo = bingo.results.filter((p) => propString(p.properties["Board"]) === `${month} Monthly`);
+  const bingoDone = monthBingo.filter((p) => {
     const done = p.properties["Done"] as { type?: string; checkbox?: boolean } | undefined;
     return done?.type === "checkbox" && done.checkbox;
   }).length;
@@ -72,25 +73,57 @@ async function monthlyStats(start: string, end: string): Promise<Stat[]> {
     { key: "tasks", label: "Tasks", value: `${tasksDone} / ${tasksTotal}`, caption: "완료 / 전체" },
     { key: "tracked", label: "Tracked", value: hours(trackedMin), caption: "기록된 시간" },
     { key: "expense", label: "Expense", value: won(expense), caption: budgetTotal != null ? `예산 ${won(budgetTotal)}` : "예산 없음" },
-    { key: "life", label: "Life", value: `${lifeCount}건`, caption: `Bingo ${bingoDone} / ${bingo.results.length}` },
+    { key: "life", label: "Life", value: `${lifeCount}건`, caption: `Bingo ${bingoDone} / ${monthBingo.length}` },
   ];
 }
 
-/** Quarterly review does have rollups (WIDGET-SPEC.md §9: "Q Tasks done" 등) — read straight off the page. */
-function quarterlyStats(properties: Record<string, unknown>): Stat[] {
+/**
+ * Quarterly review has Q Tasks done/Q Tasks total/Q Expense/"Q Tracked (min)"
+ * as real rollups, but no Q Bingo done/total or Q Budget — those are derived
+ * by following the "Monthly reviews" relation to the quarter's Monthly review
+ * pages and summing their own Bingo done/Bingo total, plus that month's Budget row.
+ */
+async function quarterlyStats(properties: Record<string, unknown>): Promise<Stat[]> {
   const tasksDone = propNumber(properties["Q Tasks done"]);
   const tasksTotal = propNumber(properties["Q Tasks total"]);
-  const trackedMin = propNumber(properties["Q Tracked"]);
+  const trackedMin = propNumber(properties["Q Tracked (min)"]);
   const expense = propNumber(properties["Q Expense"]);
-  const budget = propNumber(properties["Q Budget"]);
-  const bingoDone = propNumber(properties["Q Bingo done"]);
-  const bingoTotal = propNumber(properties["Q Bingo total"]);
-  const avgHours = Math.round(trackedMin / 60 / 3);
+
+  const monthlyIds = propRelation(properties["Monthly reviews"]);
+  const monthlyPages = await Promise.all(monthlyIds.map((id) => retrievePage(id)));
+
+  let bingoDone = 0;
+  let bingoTotal = 0;
+  let budgetTotal = 0;
+  let budgetFound = false;
+
+  await Promise.all(
+    monthlyPages.map(async (mp) => {
+      bingoDone += propNumber(mp.properties["Bingo done"]);
+      bingoTotal += propNumber(mp.properties["Bingo total"]);
+
+      const range = propDateRange(mp.properties["Period"]);
+      const month = range.start ? monthOf(range.start.slice(0, 10)) : null;
+      if (!month) return;
+      const budget = await queryDatabase(DB.budget, {
+        filter: { property: "Month", rich_text: { equals: month } },
+        page_size: 1,
+      });
+      const row = budget.results[0];
+      if (row) {
+        budgetTotal += propNumber(row.properties["Budget"]);
+        budgetFound = true;
+      }
+    })
+  );
+
+  const monthCount = monthlyPages.length || 3;
+  const avgHours = Math.round(trackedMin / 60 / monthCount);
 
   return [
     { key: "tasks", label: "Tasks", value: `${tasksDone} / ${tasksTotal}`, caption: "완료 / 전체" },
     { key: "tracked", label: "Tracked", value: hours(trackedMin), caption: `월 평균 ${avgHours}h` },
-    { key: "expense", label: "Expense", value: won(expense), caption: budget ? `예산 ${won(budget)}` : "예산 없음" },
+    { key: "expense", label: "Expense", value: won(expense), caption: budgetFound ? `예산 ${won(budgetTotal)}` : "예산 없음" },
     { key: "bingo", label: "Bingo", value: `${bingoDone} / ${bingoTotal}`, caption: "Quarterly board" },
   ];
 }
@@ -118,7 +151,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       if (!start || !end) throw new Error("Review 페이지에 Period 날짜가 없습니다.");
       stats = await monthlyStats(start, end);
     } else {
-      stats = quarterlyStats(page.properties);
+      stats = await quarterlyStats(page.properties);
     }
 
     withCache(res);

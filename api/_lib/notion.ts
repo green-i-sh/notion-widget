@@ -61,6 +61,15 @@ export async function updatePageProperties(
   if (!res.ok) await throwNotionError(res);
 }
 
+export async function retrievePage(pageId: string): Promise<{ id: string; properties: Record<string, unknown> }> {
+  const res = await fetch(`${API_BASE}/pages/${pageId}`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+  if (!res.ok) await throwNotionError(res);
+  return res.json() as Promise<{ id: string; properties: Record<string, unknown> }>;
+}
+
 /**
  * Notion property readers. rollup values live at .rollup.number, formula
  * values at .formula.number/.string — reading .number directly returns
@@ -110,4 +119,9 @@ export function propDateRange(prop: unknown): { start: string | null; end: strin
 export function propMultiSelect(prop: unknown): string[] {
   const p = prop as { type?: string; multi_select?: { name: string }[] } | undefined;
   return p?.type === "multi_select" ? (p.multi_select ?? []).map((t) => t.name) : [];
+}
+
+export function propRelation(prop: unknown): string[] {
+  const p = prop as { type?: string; relation?: { id: string }[] } | undefined;
+  return p?.type === "relation" ? (p.relation ?? []).map((r) => r.id) : [];
 }

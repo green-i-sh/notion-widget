@@ -36,7 +36,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const rows = categories
       .map((category) => {
         const amount = thisTotals.get(category) ?? 0;
-        const delta = amount - (lastTotals.get(category) ?? 0);
+        // No previous-month row for this category at all — nothing to compare
+        // against, so leave it unset rather than showing a misleading "+100%".
+        const delta = lastTotals.has(category) ? amount - lastTotals.get(category)! : null;
         return { category, amount, delta };
       })
       .sort((a, b) => b.amount - a.amount);

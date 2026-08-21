@@ -19,7 +19,6 @@ export function TripWidget() {
         <div key={col.key} className="trip-col">
           <div className="widget-title">{col.label}</div>
           <div>{col.text || "—"}</div>
-          {col.tag && <span className="muted">{col.tag}</span>}
         </div>
       ))}
     </div>

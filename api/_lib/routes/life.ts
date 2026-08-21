@@ -4,14 +4,6 @@ import { monthOf } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
 
-/** Life's `Group` multi-select collapses onto 4 display buckets — 전시/취미 share one column in the mockup. */
-const BUCKETS = [
-  { key: "place", label: "장소", tags: ["장소"] },
-  { key: "culture", label: "전시 / 취미", tags: ["전시", "취미"] },
-  { key: "people", label: "사람", tags: ["사람"] },
-  { key: "new", label: "새로운 경험", tags: ["새로운 경험"] },
-] as const;
-
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const month = typeof req.query.month === "string" ? req.query.month : monthOf();
 
@@ -28,10 +20,22 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       }))
       .filter((r) => r.month === month);
 
-    const stats = BUCKETS.map((b) => {
-      const matches = rows.filter((r) => r.groups.some((g) => (b.tags as readonly string[]).includes(g)));
-      return { key: b.key, label: b.label, count: matches.length, names: matches.map((r) => r.name) };
-    });
+    // Group's option strings ("장소", "전시 / 취미", ...) live in Notion, not
+    // here — bucket by whatever tag values actually show up this month.
+    const buckets = new Map<string, string[]>();
+    for (const row of rows) {
+      for (const g of row.groups) {
+        if (!buckets.has(g)) buckets.set(g, []);
+        buckets.get(g)!.push(row.name);
+      }
+    }
+
+    const stats = [...buckets.entries()].map(([label, names]) => ({
+      key: label,
+      label,
+      count: names.length,
+      names,
+    }));
 
     withCache(res);
     res.status(200).json({ month, stats });

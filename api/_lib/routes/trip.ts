@@ -27,9 +27,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       name: propString(p["Name"]),
       phase: propString(p["Phase"]),
       columns: [
-        { key: "moment", label: "Best Moment", text: propString(p["Best Moment"]), tag: "" },
-        { key: "place", label: "Favorite Place", text: propString(p["Favorite Place"]), tag: propString(p["Favorite Place Time"]) },
-        { key: "change", label: "What I'd Change", text: propString(p["What I'd Change"]), tag: propString(p["Revisit"]) },
+        { key: "moment", label: "Best Moment", text: propString(p["Best Moment"]) },
+        { key: "place", label: "Favorite Place", text: propString(p["Favorite Place"]) },
+        // Notion property names can't hold an apostrophe, so "What I'd Change" is stored as "What to Change".
+        { key: "change", label: "What I'd Change", text: propString(p["What to Change"]) },
       ],
     });
   } catch (err) {
