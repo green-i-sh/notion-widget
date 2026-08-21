@@ -17,7 +17,10 @@ export type WidgetType =
   | "weather"
   | "routine"
   | "today"
-  | "timeline";
+  | "timeline"
+  | "bingo"
+  | "finance"
+  | "finance-month";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";

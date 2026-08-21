@@ -62,6 +62,15 @@ function describeError(body: ErrorBody | null, status: number): string {
   return parts.length ? parts.join(" — ") : `요청 실패 (${status})`;
 }
 
+/** Builds a query string from optional params — every /api/* GET here takes a handful of optional filters. */
+function withQuery(path: string, params: Record<string, string | undefined>): string {
+  const qs = Object.entries(params)
+    .filter((entry): entry is [string, string] => Boolean(entry[1]))
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join("&");
+  return qs ? `${path}?${qs}` : path;
+}
+
 /** Appends a bust-cache param and skips the browser's own cache — used right after a write. */
 async function getJSON<T>(url: string, opts?: FetchOpts): Promise<T> {
   const bustUrl = opts?.bust ? `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}` : url;
@@ -71,19 +80,11 @@ async function getJSON<T>(url: string, opts?: FetchOpts): Promise<T> {
   return body as T;
 }
 
-export function fetchToday(date?: string, opts?: FetchOpts): Promise<TodaySummary> {
-  return getJSON(`/api/today${date ? `?date=${date}` : ""}`, opts);
-}
-
-export function fetchRoutineWeek(date?: string, opts?: FetchOpts): Promise<RoutineWeek> {
-  return getJSON(`/api/routine${date ? `?date=${date}` : ""}`, opts);
-}
-
-export async function toggleRoutine(pageId: string, routine: Routine, value: boolean): Promise<void> {
-  const res = await fetch("/api/routine", {
+async function postJSON(url: string, payload: unknown): Promise<void> {
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pageId, routine, value }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as ErrorBody | null;
@@ -91,6 +92,72 @@ export async function toggleRoutine(pageId: string, routine: Routine, value: boo
   }
 }
 
+export function fetchToday(date?: string, opts?: FetchOpts): Promise<TodaySummary> {
+  return getJSON(withQuery("/api/today", { date }), opts);
+}
+
+export function fetchRoutineWeek(date?: string, opts?: FetchOpts): Promise<RoutineWeek> {
+  return getJSON(withQuery("/api/routine", { date }), opts);
+}
+
+export function toggleRoutine(pageId: string, routine: Routine, value: boolean): Promise<void> {
+  return postJSON("/api/routine", { pageId, routine, value });
+}
+
 export function fetchTimeline(date?: string, opts?: FetchOpts): Promise<TimelineDay> {
-  return getJSON(`/api/timeline${date ? `?date=${date}` : ""}`, opts);
+  return getJSON(withQuery("/api/timeline", { date }), opts);
+}
+
+export type BingoBoard = "monthly" | "quarterly";
+
+export interface BingoItem {
+  id: string;
+  name: string;
+  board: string;
+  no: number;
+  done: boolean;
+}
+
+export interface BingoBoardData {
+  board: string;
+  items: BingoItem[];
+  done: number;
+  total: number;
+}
+
+export function fetchBingo(board?: BingoBoard, opts?: FetchOpts): Promise<BingoBoardData> {
+  return getJSON(withQuery("/api/bingo", { board }), opts);
+}
+
+export function toggleBingo(pageId: string, value: boolean): Promise<void> {
+  return postJSON("/api/bingo", { pageId, value });
+}
+
+export interface MonthFinance {
+  month: string;
+  expenseTotal: number;
+  fixedTotal: number;
+  variableTotal: number;
+  incomeTotal: number;
+  incomeCategories: string[];
+  budgetTotal: number | null;
+  budgetLeft: number | null;
+}
+
+export function fetchFinanceMonth(month?: string, opts?: FetchOpts): Promise<MonthFinance> {
+  return getJSON(withQuery("/api/finance-month", { month }), opts);
+}
+
+export interface CardLoanItem {
+  name: string;
+  date: string | null;
+  amount: number;
+}
+
+export interface FinanceSummary extends MonthFinance {
+  cardLoan: { total: number; items: CardLoanItem[] };
+}
+
+export function fetchFinance(month?: string, opts?: FetchOpts): Promise<FinanceSummary> {
+  return getJSON(withQuery("/api/finance", { month }), opts);
 }

@@ -18,6 +18,9 @@ import { WeatherWidget } from "./WeatherWidget";
 import { RoutineWidget } from "./RoutineWidget";
 import { TodayWidget } from "./TodayWidget";
 import { TimelineWidget } from "./TimelineWidget";
+import { BingoWidget } from "./BingoWidget";
+import { FinanceWidget } from "./FinanceWidget";
+import { FinanceMonthWidget } from "./FinanceMonthWidget";
 
 /** Widgets receive their config; most ignore it. */
 export type WidgetProps = { config: WidgetConfig };
@@ -49,4 +52,7 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   routine: { title: "Routine", Component: RoutineWidget, flush: true },
   today: { title: "Today", Component: TodayWidget, flush: true },
   timeline: { title: "Timeline", Component: TimelineWidget, flush: true },
+  bingo: { title: "Bingo", Component: BingoWidget, flush: true },
+  finance: { title: "Finance", Component: FinanceWidget, flush: true },
+  "finance-month": { title: "Finance · Month", Component: FinanceMonthWidget, flush: true },
 };

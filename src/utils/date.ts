@@ -20,9 +20,18 @@ export function todayISO(): string {
   return toISODate(new Date());
 }
 
+function searchParam(name: string): string | undefined {
+  return new URLSearchParams(window.location.search).get(name) ?? undefined;
+}
+
 /** `?date=YYYY-MM-DD` from the current URL — Notion-backed standalone widgets (?w=today etc.) all read this the same way. */
 export function dateParam(): string | undefined {
-  return new URLSearchParams(window.location.search).get("date") ?? undefined;
+  return searchParam("date");
+}
+
+/** `?month=YYYY.MM` from the current URL — finance/life/category/streak widgets default to the current month without it. */
+export function monthParam(): string | undefined {
+  return searchParam("month");
 }
 
 export function parseISODate(iso: string): Date | null {

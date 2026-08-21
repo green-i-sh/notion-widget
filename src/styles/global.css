@@ -630,6 +630,47 @@ input[type="color"] {
   cursor: default;
 }
 
+/* ---- bingo (Notion-backed, ?w=bingo) ---- */
+
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+@media (max-width: 480px) {
+  .bingo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.bingo-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bingo-no {
+  background: var(--lav-bg);
+  color: var(--subtext);
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.bingo-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.bingo-title {
+  font-size: 13px;
+}
+
 .timeline {
   position: relative;
   border-bottom: 1px solid var(--border);

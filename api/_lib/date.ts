@@ -17,6 +17,11 @@ export function addDays(iso: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** "YYYY.MM" for the given YYYY-MM-DD date (or today, KST) — matches Finance/Budget's Month property format. */
+export function monthOf(iso: string = todayKST()): string {
+  return iso.slice(0, 7).replace("-", ".");
+}
+
 /** Monday of the week containing the given YYYY-MM-DD date. */
 export function mondayOf(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
