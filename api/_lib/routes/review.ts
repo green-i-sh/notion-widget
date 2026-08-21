@@ -174,6 +174,15 @@ async function findReviewPage(type: ReviewType, req: ApiRequest, today: string):
     sorts: [{ property: "Period", direction: "descending" }],
     page_size: 50,
   });
+
+  // Quarterly pages are made ahead of the quarter on purpose (WIDGET-SPEC.md's
+  // own "2026 Fall" example starts 09.01, weeks before it's created) — only
+  // Monthly needs the future-Period guard, for the case that actually broke
+  // (a 2026.10 Monthly created early, with no activity yet, winning "latest").
+  if (type === "Quarterly") {
+    return result.results[0] ?? null;
+  }
+
   const started = result.results.find((p) => {
     const range = propDateRange(p.properties["Period"]);
     return range.start ? range.start.slice(0, 10) <= today : false;
