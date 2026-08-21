@@ -766,6 +766,9 @@ input[type="color"] {
 .meta-line {
   font-size: 11px;
   color: var(--subtext);
+  /* Server sends real 3-space gaps between items — HTML collapses runs of
+     spaces by default, so this is required to actually show them. */
+  white-space: pre-wrap;
 }
 
 .mono-time {
