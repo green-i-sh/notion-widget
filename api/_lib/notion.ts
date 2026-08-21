@@ -100,3 +100,14 @@ export function propDateStart(prop: unknown): string | null {
   const p = prop as { type?: string; date?: { start?: string | null } | null } | undefined;
   return p?.type === "date" ? p.date?.start ?? null : null;
 }
+
+export function propDateRange(prop: unknown): { start: string | null; end: string | null } {
+  const p = prop as { type?: string; date?: { start?: string | null; end?: string | null } | null } | undefined;
+  if (p?.type !== "date") return { start: null, end: null };
+  return { start: p.date?.start ?? null, end: p.date?.end ?? null };
+}
+
+export function propMultiSelect(prop: unknown): string[] {
+  const p = prop as { type?: string; multi_select?: { name: string }[] } | undefined;
+  return p?.type === "multi_select" ? (p.multi_select ?? []).map((t) => t.name) : [];
+}

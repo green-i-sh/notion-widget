@@ -161,3 +161,48 @@ export interface FinanceSummary extends MonthFinance {
 export function fetchFinance(month?: string, opts?: FetchOpts): Promise<FinanceSummary> {
   return getJSON(withQuery("/api/finance", { month }), opts);
 }
+
+export interface LifeStat {
+  key: string;
+  label: string;
+  count: number;
+  names: string[];
+}
+
+export interface LifeData {
+  month: string;
+  stats: LifeStat[];
+}
+
+export function fetchLife(month?: string, opts?: FetchOpts): Promise<LifeData> {
+  return getJSON(withQuery("/api/life", { month }), opts);
+}
+
+export type ReviewType = "monthly" | "quarterly";
+
+export interface ReviewStat {
+  key: string;
+  label: string;
+  value: string;
+  caption: string;
+}
+
+export interface ReviewData {
+  type: string;
+  found: boolean;
+  stats: ReviewStat[];
+}
+
+export function fetchReview(type?: ReviewType, opts?: FetchOpts): Promise<ReviewData> {
+  return getJSON(withQuery("/api/review", { type }), opts);
+}
+
+export interface ShelfRow {
+  key: string;
+  label: string;
+  value: string;
+}
+
+export function fetchShelf(opts?: FetchOpts): Promise<{ rows: ShelfRow[] }> {
+  return getJSON("/api/shelf", opts);
+}

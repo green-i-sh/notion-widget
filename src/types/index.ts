@@ -20,7 +20,10 @@ export type WidgetType =
   | "timeline"
   | "bingo"
   | "finance"
-  | "finance-month";
+  | "finance-month"
+  | "life"
+  | "review"
+  | "shelf";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";
