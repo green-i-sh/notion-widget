@@ -16,8 +16,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 }
 
 async function handleWeek(req: ApiRequest, res: ApiResponse) {
-  const startParam = typeof req.query.start === "string" ? req.query.start : undefined;
-  const start = mondayOf(startParam ?? todayKST());
+  const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
+  const start = mondayOf(dateParam ?? todayKST());
   const dates = Array.from({ length: 7 }, (_, i) => addDays(start, i));
 
   try {

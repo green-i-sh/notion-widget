@@ -20,6 +20,11 @@ export function todayISO(): string {
   return toISODate(new Date());
 }
 
+/** `?date=YYYY-MM-DD` from the current URL — Notion-backed standalone widgets (?w=today etc.) all read this the same way. */
+export function dateParam(): string | undefined {
+  return new URLSearchParams(window.location.search).get("date") ?? undefined;
+}
+
 export function parseISODate(iso: string): Date | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   if (!m) return null;

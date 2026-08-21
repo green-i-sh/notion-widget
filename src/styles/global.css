@@ -143,16 +143,10 @@ body {
   border-color: var(--accent);
 }
 
-/* Notion-embedded widgets (?w=routine, ?w=today) — no card, just the block. */
+/* Notion-embedded widgets (WIDGET-SPEC.md) — no card, just the block. Notion already labels the block, so widgets render content only, no title. */
 .widget.flush {
   border-color: transparent;
   background: transparent;
-}
-
-.embed-title {
-  font-family: var(--serif);
-  font-size: 14px;
-  color: var(--text);
 }
 
 /* ---- embed design system — Pattern A/B (WIDGET-SPEC.md §0) ---- */

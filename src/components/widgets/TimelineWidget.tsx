@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { fetchTimeline, type TimelineEntry } from "../../services/notion";
+import { useApiData } from "../../hooks/useApiData";
+import { dateParam } from "../../utils/date";
 
 const DAY_START = 7; // 07:00
 const DAY_END = 23; // 23:00
@@ -34,25 +35,14 @@ function block(entry: TimelineEntry, totalHeight: number) {
 }
 
 export function TimelineWidget() {
-  const [entries, setEntries] = useState<TimelineEntry[] | null>(null);
-  const [totalMin, setTotalMin] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchTimeline()
-      .then((day) => {
-        if (cancelled) return;
-        setEntries(day.entries);
-        setTotalMin(day.totalMin);
-      })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
-    return () => { cancelled = true; };
-  }, []);
+  const date = dateParam();
+  const { data: day, error } = useApiData((opts) => fetchTimeline(date, opts), [date]);
 
   if (error) return <div className="error">{error}</div>;
-  if (!entries) return <div className="empty">불러오는 중</div>;
+  if (!day) return <div className="empty">불러오는 중</div>;
 
+  const entries: TimelineEntry[] = day.entries;
+  const totalMin = day.totalMin;
   const totalHeight = HOURS.length * ROW_HEIGHT;
 
   return (

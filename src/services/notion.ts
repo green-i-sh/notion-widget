@@ -3,6 +3,8 @@
  * reaches this file — every request just hits our own origin.
  */
 
+import type { FetchOpts } from "../hooks/useApiData";
+
 export type Routine = "Exercise" | "Reading" | "Organizing" | "Other";
 
 export interface TodaySummary {
@@ -60,19 +62,21 @@ function describeError(body: ErrorBody | null, status: number): string {
   return parts.length ? parts.join(" — ") : `요청 실패 (${status})`;
 }
 
-async function getJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url);
+/** Appends a bust-cache param and skips the browser's own cache — used right after a write. */
+async function getJSON<T>(url: string, opts?: FetchOpts): Promise<T> {
+  const bustUrl = opts?.bust ? `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}` : url;
+  const res = await fetch(bustUrl, opts?.bust ? { cache: "no-store" } : undefined);
   const body = (await res.json().catch(() => null)) as (T & ErrorBody) | null;
   if (!res.ok) throw new Error(describeError(body, res.status));
   return body as T;
 }
 
-export function fetchToday(date?: string): Promise<TodaySummary> {
-  return getJSON(`/api/today${date ? `?date=${date}` : ""}`);
+export function fetchToday(date?: string, opts?: FetchOpts): Promise<TodaySummary> {
+  return getJSON(`/api/today${date ? `?date=${date}` : ""}`, opts);
 }
 
-export function fetchRoutineWeek(start?: string): Promise<RoutineWeek> {
-  return getJSON(`/api/routine${start ? `?start=${start}` : ""}`);
+export function fetchRoutineWeek(date?: string, opts?: FetchOpts): Promise<RoutineWeek> {
+  return getJSON(`/api/routine${date ? `?date=${date}` : ""}`, opts);
 }
 
 export async function toggleRoutine(pageId: string, routine: Routine, value: boolean): Promise<void> {
@@ -87,6 +91,6 @@ export async function toggleRoutine(pageId: string, routine: Routine, value: boo
   }
 }
 
-export function fetchTimeline(date?: string): Promise<TimelineDay> {
-  return getJSON(`/api/timeline${date ? `?date=${date}` : ""}`);
+export function fetchTimeline(date?: string, opts?: FetchOpts): Promise<TimelineDay> {
+  return getJSON(`/api/timeline${date ? `?date=${date}` : ""}`, opts);
 }

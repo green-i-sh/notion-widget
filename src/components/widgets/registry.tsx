@@ -25,6 +25,8 @@ export type WidgetProps = { config: WidgetConfig };
 interface Entry {
   title: string;
   Component: ComponentType<WidgetProps>;
+  /** Notion-embedded widgets (WIDGET-SPEC.md) read as a page block, not a dashboard card — no border, transparent bg, in standalone (?w=) mode. */
+  flush?: boolean;
 }
 
 /** Single source of truth. Adding a widget means adding one line here. */
@@ -44,7 +46,7 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   link: { title: "Link", Component: LinkWidget },
   image: { title: "Image", Component: ImageWidget },
   weather: { title: "Weather", Component: WeatherWidget },
-  routine: { title: "Routine", Component: RoutineWidget },
-  today: { title: "Today", Component: TodayWidget },
-  timeline: { title: "Timeline", Component: TimelineWidget },
+  routine: { title: "Routine", Component: RoutineWidget, flush: true },
+  today: { title: "Today", Component: TodayWidget, flush: true },
+  timeline: { title: "Timeline", Component: TimelineWidget, flush: true },
 };

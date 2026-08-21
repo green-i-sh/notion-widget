@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { fetchToday, type TodaySummary } from "../../services/notion";
+import { fetchToday } from "../../services/notion";
+import { useApiData } from "../../hooks/useApiData";
+import { dateParam } from "../../utils/date";
 import { EmbedRows } from "./shared/EmbedRows";
 
 function formatMinutes(min: number): string {
@@ -9,43 +10,32 @@ function formatMinutes(min: number): string {
 }
 
 export function TodayWidget() {
-  const [summary, setSummary] = useState<TodaySummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchToday()
-      .then((s) => { if (!cancelled) setSummary(s); })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
-    return () => { cancelled = true; };
-  }, []);
+  const date = dateParam();
+  const { data: summary, error } = useApiData((opts) => fetchToday(date, opts), [date]);
 
   if (error) return <div className="error">{error}</div>;
   if (!summary) return <div className="empty">불러오는 중</div>;
-  if (!summary.found) return <div className="empty">오늘 Daily Log가 아직 없습니다.</div>;
+  if (!summary.found) return <div className="empty">해당 날짜의 Daily Log가 아직 없습니다.</div>;
 
   const { tasksDone = 0, tasksTotal = 0, trackedMin = 0, expense = 0, morningPage } = summary;
   const written = morningPage === "작성";
 
   return (
-    <>
-      <div className="embed-title">Today · Monitoring</div>
-      <EmbedRows
-        rows={[
-          { key: "tasks", label: "Tasks 완료", value: `${tasksDone} / ${tasksTotal}` },
-          { key: "tracked", label: "Tracked", value: formatMinutes(trackedMin) },
-          { key: "expense", label: "Expense", value: `₩${Math.abs(expense).toLocaleString()}` },
-          {
-            key: "morning",
-            label: "Morning Page",
-            value: (
-              <span className={`embed-chip ${written ? "green" : "gray"}`}>
-                {written ? "작성 완료" : morningPage || "미작성"}
-              </span>
-            ),
-          },
-        ]}
-      />
-    </>
+    <EmbedRows
+      rows={[
+        { key: "tasks", label: "Tasks 완료", value: `${tasksDone} / ${tasksTotal}` },
+        { key: "tracked", label: "Tracked", value: formatMinutes(trackedMin) },
+        { key: "expense", label: "Expense", value: `₩${Math.abs(expense).toLocaleString()}` },
+        {
+          key: "morning",
+          label: "Morning Page",
+          value: (
+            <span className={`embed-chip ${written ? "green" : "gray"}`}>
+              {written ? "작성 완료" : morningPage || "미작성"}
+            </span>
+          ),
+        },
+      ]}
+    />
   );
 }

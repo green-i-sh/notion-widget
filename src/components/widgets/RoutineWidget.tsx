@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { WEEKDAYS_KO } from "../../utils/date";
+import { useState } from "react";
+import { WEEKDAYS_KO, dateParam } from "../../utils/date";
 import { fetchRoutineWeek, toggleRoutine, type Routine, type RoutineDay } from "../../services/notion";
+import { useApiData } from "../../hooks/useApiData";
 
 const ROUTINES: Routine[] = ["Exercise", "Reading", "Organizing", "Other"];
 const ROUTINE_COLOR: Record<Routine, string> = {
@@ -11,35 +12,40 @@ const ROUTINE_COLOR: Record<Routine, string> = {
 };
 
 export function RoutineWidget() {
-  const [days, setDays] = useState<RoutineDay[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchRoutineWeek()
-      .then((week) => { if (!cancelled) setDays(week.days); })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const toggle = (day: RoutineDay, routine: Routine) => {
-    if (!day.pageId || !day.values) return;
-    const next = !day.values[routine];
-    setDays((prev) =>
-      prev?.map((d) => (d.date === day.date ? { ...d, values: { ...d.values!, [routine]: next } } : d)) ?? prev
-    );
-    toggleRoutine(day.pageId, routine, next).catch((err) => setError(err instanceof Error ? err.message : String(err)));
-  };
+  const date = dateParam();
+  const { data: week, error, refresh } = useApiData((opts) => fetchRoutineWeek(date, opts), [date]);
+  const [pending, setPending] = useState<Record<string, boolean>>({});
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   if (error) return <div className="error">{error}</div>;
-  if (!days) return <div className="empty">불러오는 중</div>;
+  if (!week) return <div className="empty">불러오는 중</div>;
+
+  const toggle = async (day: RoutineDay, routine: Routine) => {
+    if (!day.pageId || !day.values) return;
+    const key = `${day.date}:${routine}`;
+    const next = !day.values[routine];
+    setToggleError(null);
+    setPending((p) => ({ ...p, [key]: next }));
+    try {
+      await toggleRoutine(day.pageId, routine, next);
+      await refresh({ bust: true });
+    } catch (err) {
+      setToggleError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setPending((p) => {
+        const rest = { ...p };
+        delete rest[key];
+        return rest;
+      });
+    }
+  };
 
   return (
     <>
-      <div className="embed-title">Routine Check</div>
+      {toggleError && <div className="error">{toggleError}</div>}
       {ROUTINES.map((routine) => {
         const color = ROUTINE_COLOR[routine];
-        const count = days.filter((d) => d.values?.[routine]).length;
+        const count = week.days.filter((d) => pending[`${d.date}:${routine}`] ?? d.values?.[routine]).length;
         return (
           <div key={routine} className="routine-row">
             <div className="routine-head">
@@ -47,8 +53,9 @@ export function RoutineWidget() {
               <span className="routine-count">{count} / 7</span>
             </div>
             <div className="routine-grid">
-              {days.map((day, i) => {
-                const on = day.values?.[routine] ?? false;
+              {week.days.map((day, i) => {
+                const key = `${day.date}:${routine}`;
+                const on = pending[key] ?? day.values?.[routine] ?? false;
                 if (!day.pageId) {
                   return <button key={day.date} type="button" className="routine-cell" disabled aria-label={`${day.date} 기록 없음`} />;
                 }

@@ -34,7 +34,7 @@ export default function App() {
   }, [appearance]);
 
   if (standalone) {
-    const { Component } = WIDGETS[standalone];
+    const { Component, flush } = WIDGETS[standalone];
     const config: WidgetConfig = {
       id: `standalone-${standalone}`,
       type: standalone,
@@ -43,9 +43,6 @@ export default function App() {
       order: 0,
       options: {},
     };
-    // Routine/Today are meant to read as a block already on the Notion
-    // page, not a floating card — drop the border and let the page bg show.
-    const flush = standalone === "routine" || standalone === "today";
     return (
       <div className={`station${appearance.compact ? " compact" : ""}`}>
         <div className={`widget${flush ? " flush" : ""}`}>
