@@ -1,8 +1,11 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
 import { queryDatabase, retrievePage, propNumber, propString, propDateRange, propRelation } from "../notion.js";
-import { monthOf } from "../date.js";
+import { monthOf, todayKST } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
+
+type ReviewPage = { id: string; properties: Record<string, unknown> };
+type ReviewType = "Monthly" | "Quarterly";
 
 interface Stat {
   key: string;
@@ -128,16 +131,61 @@ async function quarterlyStats(properties: Record<string, unknown>): Promise<Stat
   ];
 }
 
+/**
+ * Picks the Review page to show. ?month=/?quarter= pin an exact one;
+ * otherwise the newest Period that has already started — a future-dated
+ * Period (e.g. a 2026.10 Monthly page created ahead of time) has no Daily
+ * Log/Life/Bingo activity yet and would render as all zeros.
+ */
+async function findReviewPage(type: ReviewType, req: ApiRequest, today: string): Promise<ReviewPage | null> {
+  const monthParam = typeof req.query.month === "string" ? req.query.month : undefined;
+  const quarterParam = typeof req.query.quarter === "string" ? req.query.quarter : undefined;
+
+  if (type === "Monthly" && monthParam) {
+    const result = await queryDatabase(DB.review, {
+      filter: { property: "Type", select: { equals: "Monthly" } },
+      page_size: 100,
+    });
+    return (
+      result.results.find((p) => {
+        const range = propDateRange(p.properties["Period"]);
+        return range.start ? monthOf(range.start.slice(0, 10)) === monthParam : false;
+      }) ?? null
+    );
+  }
+
+  if (type === "Quarterly" && quarterParam) {
+    const [year, season] = quarterParam.split("-");
+    const label = season ? `${year} ${season[0].toUpperCase()}${season.slice(1).toLowerCase()}` : year;
+    const result = await queryDatabase(DB.review, {
+      filter: {
+        and: [
+          { property: "Type", select: { equals: "Quarterly" } },
+          { property: "Name", title: { contains: label } },
+        ],
+      },
+      page_size: 5,
+    });
+    return result.results[0] ?? null;
+  }
+
+  const result = await queryDatabase(DB.review, {
+    filter: { property: "Type", select: { equals: type } },
+    sorts: [{ property: "Period", direction: "descending" }],
+    page_size: 50,
+  });
+  const started = result.results.find((p) => {
+    const range = propDateRange(p.properties["Period"]);
+    return range.start ? range.start.slice(0, 10) <= today : false;
+  });
+  return started ?? null;
+}
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const type = typeof req.query.type === "string" && req.query.type.toLowerCase() === "quarterly" ? "Quarterly" : "Monthly";
+  const type: ReviewType = typeof req.query.type === "string" && req.query.type.toLowerCase() === "quarterly" ? "Quarterly" : "Monthly";
 
   try {
-    const result = await queryDatabase(DB.review, {
-      filter: { property: "Type", select: { equals: type } },
-      sorts: [{ property: "Period", direction: "descending" }],
-      page_size: 1,
-    });
-    const page = result.results[0];
+    const page = await findReviewPage(type, req, todayKST());
     if (!page) {
       res.status(200).json({ type, found: false, stats: [] });
       return;
