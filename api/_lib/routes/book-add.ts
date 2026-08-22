@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { createPage, queryDatabase } from "../notion.js";
+import { createPage, queryDatabase, uploadCoverFromUrl } from "../notion.js";
 import { sendError } from "../http.js";
 import { DB } from "../db.js";
 
@@ -53,15 +53,27 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       Status: { select: { name: "To Read" } },
     };
     if (body.author) properties["Author"] = { rich_text: [{ text: { content: body.author } }] };
-    if (body.cover) properties["Cover"] = { files: [{ type: "external", name: title, external: { url: body.cover } }] };
     if (body.publisher) properties["Publisher"] = { rich_text: [{ text: { content: body.publisher } }] };
     if (body.published) properties["Published"] = { rich_text: [{ text: { content: body.published } }] };
     if (body.isbn) properties["ISBN"] = { rich_text: [{ text: { content: body.isbn } }] };
     if (body.url) properties["Link"] = { url: body.url };
     // Pages: Kakao doesn't return a page count — left unset on purpose.
 
+    // Cover art: uploaded through the File Upload API, not linked as an
+    // `external` file — some CDNs (Daum's covers among them) block Notion's
+    // own image proxy, so an external reference to them never renders. A
+    // failed fetch/upload only skips the cover; it must not fail the add.
+    let coverUploaded = false;
+    if (body.cover) {
+      const fileUploadId = await uploadCoverFromUrl(body.cover);
+      if (fileUploadId) {
+        properties["Cover"] = { files: [{ type: "file_upload", file_upload: { id: fileUploadId } }] };
+        coverUploaded = true;
+      }
+    }
+
     await createPage(DB.books, properties, pageChildren(body.contents));
-    res.status(200).json({ ok: true, duplicate: existing.results.length > 0 });
+    res.status(200).json({ ok: true, duplicate: existing.results.length > 0, coverUploaded });
   } catch (err) {
     sendError(res, err, { endpoint: "book-add", databaseId: DB.books });
   }

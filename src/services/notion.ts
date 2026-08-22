@@ -349,6 +349,6 @@ export interface AddBookPayload {
   contents: string;
 }
 
-export function addBook(payload: AddBookPayload): Promise<{ ok: boolean; duplicate: boolean }> {
+export function addBook(payload: AddBookPayload): Promise<{ ok: boolean; duplicate: boolean; coverUploaded: boolean }> {
   return postJSONResult("/api/book-add", payload);
 }

@@ -1,4 +1,7 @@
-const NOTION_VERSION = "2022-06-28";
+// The File Upload API (uploadCoverFromUrl below) needs 2025-09-03 or later.
+// Notion's versioning is additive for existing read/write shapes, so bumping
+// this for every call is safe rather than juggling two header sets.
+const NOTION_VERSION = "2025-09-03";
 const API_BASE = "https://api.notion.com/v1";
 
 export class TokenMissingError extends Error {
@@ -78,6 +81,80 @@ export async function createPage(
   });
   if (!res.ok) await throwNotionError(res);
   return res.json() as Promise<{ id: string }>;
+}
+
+const COVER_FETCH_TIMEOUT_MS = 8000;
+const MAX_COVER_BYTES = 5 * 1024 * 1024; // serverless memory guard — covers are never legitimately this big
+
+function extensionFor(contentType: string): string {
+  if (contentType.includes("png")) return "png";
+  if (contentType.includes("webp")) return "webp";
+  if (contentType.includes("gif")) return "gif";
+  return "jpg";
+}
+
+async function createFileUpload(filename: string, contentType: string): Promise<{ id: string; upload_url: string }> {
+  const res = await fetch(`${API_BASE}/file_uploads`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ filename, content_type: contentType }),
+  });
+  if (!res.ok) await throwNotionError(res);
+  return res.json() as Promise<{ id: string; upload_url: string }>;
+}
+
+/**
+ * Downloads a remote image and uploads its bytes to Notion's File Upload
+ * API, returning the resulting file_upload id to reference from a `files`
+ * property. Some CDNs (Daum's book covers among them) block Notion's own
+ * image proxy, so an `external` file reference to them silently never
+ * renders — sending the bytes directly sidesteps that.
+ *
+ * Returns null on any failure (fetch, oversize, timeout, upload) instead of
+ * throwing — callers should treat null as "skip the cover, keep going",
+ * never as a reason to fail whatever else they were doing.
+ */
+export async function uploadCoverFromUrl(imageUrl: string): Promise<string | null> {
+  try {
+    const imgRes = await fetch(imageUrl, { signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS) });
+    if (!imgRes.ok) {
+      console.error("[notion] cover fetch failed", imageUrl, imgRes.status);
+      return null;
+    }
+
+    const declaredLength = Number(imgRes.headers.get("content-length") ?? "0");
+    if (declaredLength > MAX_COVER_BYTES) {
+      console.error("[notion] cover too large (content-length), skipping", imageUrl, declaredLength);
+      return null;
+    }
+
+    const contentType = imgRes.headers.get("content-type") ?? "image/jpeg";
+    const bytes = new Uint8Array(await imgRes.arrayBuffer());
+    if (bytes.byteLength > MAX_COVER_BYTES) {
+      console.error("[notion] cover too large (downloaded), skipping", imageUrl, bytes.byteLength);
+      return null;
+    }
+
+    const filename = `cover.${extensionFor(contentType)}`;
+    const created = await createFileUpload(filename, contentType);
+
+    const form = new FormData();
+    form.append("file", new Blob([bytes], { type: contentType }), filename);
+    const headers = authHeaders();
+    delete headers["Content-Type"]; // let FormData set its own multipart boundary
+    const sendRes = await fetch(created.upload_url, {
+      method: "POST",
+      headers,
+      body: form,
+      signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS),
+    });
+    if (!sendRes.ok) await throwNotionError(sendRes);
+
+    return created.id;
+  } catch (err) {
+    console.error("[notion] cover upload failed", imageUrl, err);
+    return null;
+  }
 }
 
 export async function retrievePage(pageId: string): Promise<{ id: string; properties: Record<string, unknown> }> {

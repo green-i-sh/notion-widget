@@ -39,7 +39,8 @@ export function BookAddWidget() {
         url: book.url,
         contents: book.contents,
       });
-      setStatus(res.duplicate ? `"${book.title}" 추가 완료 — 이미 Books에 있던 책입니다.` : `"${book.title}" 추가 완료.`);
+      const base = res.duplicate ? `"${book.title}" 추가 완료 — 이미 Books에 있던 책입니다.` : `"${book.title}" 추가 완료.`;
+      setStatus(res.coverUploaded ? base : `${base} (표지 없이 추가됨)`);
       setResults(null);
       setQuery("");
     } catch (err) {
