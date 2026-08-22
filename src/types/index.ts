@@ -29,7 +29,8 @@ export type WidgetType =
   | "trip"
   | "streak"
   | "morning"
-  | "meta";
+  | "meta"
+  | "book-add";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";

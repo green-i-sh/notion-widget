@@ -15,6 +15,8 @@ import trip from "./_lib/routes/trip.js";
 import streak from "./_lib/routes/streak.js";
 import morning from "./_lib/routes/morning.js";
 import meta from "./_lib/routes/meta.js";
+import bookSearch from "./_lib/routes/book-search.js";
+import bookAdd from "./_lib/routes/book-add.js";
 
 /**
  * Single catch-all function for every /api/* route. Vercel's Hobby plan caps
@@ -39,6 +41,8 @@ export const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promi
   streak,
   morning,
   meta,
+  "book-search": bookSearch,
+  "book-add": bookAdd,
 };
 
 /**

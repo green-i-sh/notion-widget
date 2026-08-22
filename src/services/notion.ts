@@ -92,6 +92,19 @@ async function postJSON(url: string, payload: unknown): Promise<void> {
   }
 }
 
+/** Like postJSON, but returns the parsed response body — for endpoints whose
+ *  result the caller needs (e.g. a duplicate flag), not just success/failure. */
+async function postJSONResult<T>(url: string, payload: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const body = (await res.json().catch(() => null)) as (T & ErrorBody) | null;
+  if (!res.ok) throw new Error(describeError(body, res.status));
+  return body as T;
+}
+
 export function fetchToday(date?: string, opts?: FetchOpts): Promise<TodaySummary> {
   return getJSON(withQuery("/api/today", { date }), opts);
 }
@@ -306,4 +319,27 @@ export interface MetaData {
 
 export function fetchMeta(kind: MetaKind, opts?: FetchOpts): Promise<MetaData> {
   return getJSON(withQuery("/api/meta", { kind }), opts);
+}
+
+export interface NaverBook {
+  title: string;
+  author: string;
+  image: string;
+  publisher: string;
+  pubdate: string;
+}
+
+export function searchBooks(q: string, opts?: FetchOpts): Promise<{ query: string; books: NaverBook[] }> {
+  return getJSON(withQuery("/api/book-search", { q }), opts);
+}
+
+export interface AddBookPayload {
+  title: string;
+  author: string;
+  cover: string;
+  publisher: string;
+}
+
+export function addBook(payload: AddBookPayload): Promise<{ ok: boolean; duplicate: boolean }> {
+  return postJSONResult("/api/book-add", payload);
 }
