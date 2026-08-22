@@ -1,7 +1,4 @@
-// The File Upload API (uploadCoverFromUrl below) needs 2025-09-03 or later.
-// Notion's versioning is additive for existing read/write shapes, so bumping
-// this for every call is safe rather than juggling two header sets.
-const NOTION_VERSION = "2025-09-03";
+const NOTION_VERSION = "2022-06-28";
 const API_BASE = "https://api.notion.com/v1";
 
 export class TokenMissingError extends Error {
