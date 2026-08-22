@@ -1,4 +1,11 @@
 const NOTION_VERSION = "2022-06-28";
+// 2025-09-03+ deprecates /v1/databases/{id}/query in favor of /v1/data_sources
+// — a much bigger migration than this app has taken on, so queryDatabase and
+// updatePageProperties stay on the old version. Page creation (parent:
+// database_id is still valid there) and the File Upload API — which doesn't
+// exist under the old version at all — use FILE_API_VERSION instead, scoped
+// to just those calls so the query-endpoint deprecation never applies to them.
+const FILE_API_VERSION = "2026-03-11";
 const API_BASE = "https://api.notion.com/v1";
 
 export class TokenMissingError extends Error {
@@ -27,6 +34,18 @@ function authHeaders(): Record<string, string> {
   return {
     Authorization: `Bearer ${token}`,
     "Notion-Version": NOTION_VERSION,
+    "Content-Type": "application/json",
+  };
+}
+
+/** Like authHeaders, but pinned to FILE_API_VERSION for page creation and the
+ *  File Upload API — see the comment on FILE_API_VERSION for why. */
+function fileApiHeaders(): Record<string, string> {
+  const token = process.env.NOTION_TOKEN;
+  if (!token) throw new TokenMissingError();
+  return {
+    Authorization: `Bearer ${token}`,
+    "Notion-Version": FILE_API_VERSION,
     "Content-Type": "application/json",
   };
 }
@@ -73,7 +92,7 @@ export async function createPage(
 ): Promise<{ id: string }> {
   const res = await fetch(`${API_BASE}/pages`, {
     method: "POST",
-    headers: authHeaders(),
+    headers: fileApiHeaders(),
     body: JSON.stringify({ parent: { database_id: databaseId }, properties, ...(children ? { children } : {}) }),
   });
   if (!res.ok) await throwNotionError(res);
@@ -93,7 +112,7 @@ function extensionFor(contentType: string): string {
 async function createFileUpload(filename: string, contentType: string): Promise<{ id: string; upload_url: string }> {
   const res = await fetch(`${API_BASE}/file_uploads`, {
     method: "POST",
-    headers: authHeaders(),
+    headers: fileApiHeaders(),
     body: JSON.stringify({ filename, content_type: contentType }),
   });
   if (!res.ok) await throwNotionError(res);
@@ -137,7 +156,7 @@ export async function uploadCoverFromUrl(imageUrl: string): Promise<string | nul
 
     const form = new FormData();
     form.append("file", new Blob([bytes], { type: contentType }), filename);
-    const headers = authHeaders();
+    const headers = fileApiHeaders();
     delete headers["Content-Type"]; // let FormData set its own multipart boundary
     const sendRes = await fetch(created.upload_url, {
       method: "POST",
