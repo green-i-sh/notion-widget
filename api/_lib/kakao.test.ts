@@ -4,7 +4,7 @@
  * compiling, same pattern as routeDispatch.test.ts.
  */
 import assert from "node:assert/strict";
-import { resolveOriginalImageUrl } from "./kakao.js";
+import { resolveOriginalImageUrl, pickIsbn13, formatPublished } from "./kakao.js";
 
 function main() {
   {
@@ -36,6 +36,19 @@ function main() {
     const result = resolveOriginalImageUrl(thumbnail);
     assert.equal(result, "", `expected empty string for a non-http(s) original, got: ${JSON.stringify(result)}`);
     console.log("PASS  non-http(s) original -> empty string ->", JSON.stringify(result));
+  }
+
+  {
+    assert.equal(pickIsbn13("8983920775 9788983920777"), "9788983920777");
+    assert.equal(pickIsbn13("9788983920777"), "9788983920777");
+    assert.equal(pickIsbn13(""), "");
+    console.log("PASS  pickIsbn13: two space-separated values -> trailing 13-digit; single value -> as-is; empty -> empty");
+  }
+
+  {
+    assert.equal(formatPublished("2019-09-25T00:00:00.000+09:00"), "2019.09");
+    assert.equal(formatPublished(""), "");
+    console.log("PASS  formatPublished: ISO datetime -> \"YYYY.MM\"; empty -> empty");
   }
 
   console.log("\nALL PASS");

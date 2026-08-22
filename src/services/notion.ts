@@ -327,6 +327,11 @@ export interface NaverBook {
   image: string;
   publisher: string;
   pubdate: string;
+  /** "YYYY.MM" */
+  published: string;
+  isbn: string;
+  url: string;
+  contents: string;
 }
 
 export function searchBooks(q: string, opts?: FetchOpts): Promise<{ query: string; books: NaverBook[] }> {
@@ -338,6 +343,10 @@ export interface AddBookPayload {
   author: string;
   cover: string;
   publisher: string;
+  published: string;
+  isbn: string;
+  url: string;
+  contents: string;
 }
 
 export function addBook(payload: AddBookPayload): Promise<{ ok: boolean; duplicate: boolean }> {

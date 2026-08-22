@@ -15,6 +15,14 @@ export interface KakaoBook {
   image: string;
   publisher: string;
   pubdate: string;
+  /** "YYYY.MM", for Books DB's Published (text) property. */
+  published: string;
+  /** 13-digit ISBN only — see pickIsbn13. */
+  isbn: string;
+  /** Kakao's own book detail page, for Books DB's Link (url) property. */
+  url: string;
+  /** Kakao's book blurb, for the added page's Notes quote block. */
+  contents: string;
 }
 
 interface KakaoApiDocument {
@@ -23,6 +31,9 @@ interface KakaoApiDocument {
   thumbnail: string;
   publisher: string;
   datetime: string;
+  isbn: string;
+  url: string;
+  contents: string;
 }
 
 /**
@@ -50,6 +61,19 @@ export function resolveOriginalImageUrl(thumbnail: string): string {
   return candidate.startsWith("https://") ? candidate : "";
 }
 
+/** "YYYY-MM-DD..." -> "YYYY.MM", for Books DB's Published property. */
+export function formatPublished(datetime: string): string {
+  const m = /^(\d{4})-(\d{2})/.exec(datetime ?? "");
+  return m ? `${m[1]}.${m[2]}` : "";
+}
+
+/** Kakao sometimes returns "<10-digit ISBN> <13-digit ISBN>" — Books DB only
+ *  wants the 13-digit one. A single value (no space) is used as-is. */
+export function pickIsbn13(raw: string): string {
+  const parts = (raw ?? "").trim().split(/\s+/).filter(Boolean);
+  return parts.length > 1 ? parts[parts.length - 1] : (parts[0] ?? "");
+}
+
 export async function searchKakaoBooks(query: string): Promise<KakaoBook[]> {
   const key = process.env.KAKAO_REST_API_KEY;
   if (!key) throw new KakaoKeyMissingError();
@@ -68,5 +92,9 @@ export async function searchKakaoBooks(query: string): Promise<KakaoBook[]> {
     image: resolveOriginalImageUrl(doc.thumbnail),
     publisher: doc.publisher,
     pubdate: doc.datetime?.slice(0, 4) ?? "",
+    published: formatPublished(doc.datetime),
+    isbn: pickIsbn13(doc.isbn),
+    url: doc.url ?? "",
+    contents: doc.contents ?? "",
   }));
 }

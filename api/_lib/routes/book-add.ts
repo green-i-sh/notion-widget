@@ -3,8 +3,39 @@ import { createPage, queryDatabase } from "../notion.js";
 import { sendError } from "../http.js";
 import { DB } from "../db.js";
 
+// Notion caps a single rich_text object at 2000 chars — Kakao's book blurb
+// is external input and occasionally runs long, which would otherwise fail
+// the whole page creation over a quote block nobody asked to be truncated.
+const MAX_QUOTE_LENGTH = 2000;
+
+function heading2(text: string): Record<string, unknown> {
+  return { object: "block", type: "heading_2", heading_2: { rich_text: [{ type: "text", text: { content: text } }] } };
+}
+
+/** Notes / Quote / Thoughts skeleton for a newly added book page (WORK-ORDER
+ *  follow-up). Kakao's `contents` (book blurb), when present, goes under
+ *  Notes as a quote block. */
+function pageChildren(contents?: string): Record<string, unknown>[] {
+  const blocks: Record<string, unknown>[] = [heading2("Notes")];
+  if (contents) {
+    const text = contents.slice(0, MAX_QUOTE_LENGTH);
+    blocks.push({ object: "block", type: "quote", quote: { rich_text: [{ type: "text", text: { content: text } }] } });
+  }
+  blocks.push(heading2("Quote"), heading2("Thoughts"));
+  return blocks;
+}
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const body = (req.body ?? {}) as { title?: string; author?: string; cover?: string; publisher?: string };
+  const body = (req.body ?? {}) as {
+    title?: string;
+    author?: string;
+    cover?: string;
+    publisher?: string;
+    published?: string;
+    isbn?: string;
+    url?: string;
+    contents?: string;
+  };
   const title = body.title?.trim();
   if (!title) {
     res.status(400).json({ error: "제목이 없습니다." });
@@ -23,8 +54,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     };
     if (body.author) properties["Author"] = { rich_text: [{ text: { content: body.author } }] };
     if (body.cover) properties["Cover"] = { files: [{ type: "external", name: title, external: { url: body.cover } }] };
+    if (body.publisher) properties["Publisher"] = { rich_text: [{ text: { content: body.publisher } }] };
+    if (body.published) properties["Published"] = { rich_text: [{ text: { content: body.published } }] };
+    if (body.isbn) properties["ISBN"] = { rich_text: [{ text: { content: body.isbn } }] };
+    if (body.url) properties["Link"] = { url: body.url };
+    // Pages: Kakao doesn't return a page count — left unset on purpose.
 
-    await createPage(DB.books, properties);
+    await createPage(DB.books, properties, pageChildren(body.contents));
     res.status(200).json({ ok: true, duplicate: existing.results.length > 0 });
   } catch (err) {
     sendError(res, err, { endpoint: "book-add", databaseId: DB.books });

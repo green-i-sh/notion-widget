@@ -66,11 +66,15 @@ export function richTextProperty(value: string): { rich_text: { text: { content:
   return { rich_text: value ? [{ text: { content: value } }] : [] };
 }
 
-export async function createPage(databaseId: string, properties: Record<string, unknown>): Promise<{ id: string }> {
+export async function createPage(
+  databaseId: string,
+  properties: Record<string, unknown>,
+  children?: unknown[]
+): Promise<{ id: string }> {
   const res = await fetch(`${API_BASE}/pages`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ parent: { database_id: databaseId }, properties }),
+    body: JSON.stringify({ parent: { database_id: databaseId }, properties, ...(children ? { children } : {}) }),
   });
   if (!res.ok) await throwNotionError(res);
   return res.json() as Promise<{ id: string }>;

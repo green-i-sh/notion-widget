@@ -29,7 +29,16 @@ export function BookAddWidget() {
     setError(null);
     setStatus(null);
     try {
-      const res = await addBook({ title: book.title, author: book.author, cover: book.image, publisher: book.publisher });
+      const res = await addBook({
+        title: book.title,
+        author: book.author,
+        cover: book.image,
+        publisher: book.publisher,
+        published: book.published,
+        isbn: book.isbn,
+        url: book.url,
+        contents: book.contents,
+      });
       setStatus(res.duplicate ? `"${book.title}" 추가 완료 — 이미 Books에 있던 책입니다.` : `"${book.title}" 추가 완료.`);
       setResults(null);
       setQuery("");
