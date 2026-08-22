@@ -275,7 +275,7 @@ export interface TripData {
   cover?: string | null;
   start?: string | null;
   end?: string | null;
-  people?: number | null;
+  people?: string | null;
   columns?: TripColumn[];
   expense?: TripExpense;
 }

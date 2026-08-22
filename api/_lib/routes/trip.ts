@@ -70,7 +70,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       cover: propFileUrl(p["Cover"]),
       start,
       end,
-      people: propNumber(p["인원"]) || null,
+      people: propString(p["People"]) || null,
       columns: [
         { key: "moment", label: "Best Moment", text: propString(p["Best Moment"]) },
         { key: "place", label: "Favorite Place", text: propString(p["Favorite Place"]) },

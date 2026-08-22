@@ -48,7 +48,7 @@ export function TripWidget() {
             {data.phase && <span className="embed-chip lav">{data.phase}</span>}
             <span className="trip-cover-sub">
               {formatRange(data.start, data.end)}
-              {data.people ? ` · ${data.people}인` : ""}
+              {data.people ? ` · ${data.people}` : ""}
             </span>
           </div>
         </div>
