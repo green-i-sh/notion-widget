@@ -35,13 +35,14 @@ export function BingoWidget() {
   };
 
   const done = data.items.filter((i) => pending[i.id] ?? i.done).length;
+  const shown = data.items.slice(0, 9);
 
   return (
     <>
       {toggleError && <div className="error">{toggleError}</div>}
       <div className="muted">Done {done} / {data.items.length}</div>
       <div className="bingo-grid">
-        {data.items.map((item) => {
+        {shown.map((item) => {
           const checked = pending[item.id] ?? item.done;
           return (
             <div key={item.id} className="bingo-card">
@@ -55,6 +56,9 @@ export function BingoWidget() {
           );
         })}
       </div>
+      {data.items.length > 9 && (
+        <div className="muted">9칸을 초과한 {data.items.length - 9}개 항목은 표시되지 않습니다.</div>
+      )}
     </>
   );
 }
