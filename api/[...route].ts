@@ -3,6 +3,7 @@ import health from "./_lib/routes/health.js";
 import today from "./_lib/routes/today.js";
 import routine from "./_lib/routes/routine.js";
 import timeline from "./_lib/routes/timeline.js";
+import calendar from "./_lib/routes/calendar.js";
 import bingo from "./_lib/routes/bingo.js";
 import finance from "./_lib/routes/finance.js";
 import financeMonth from "./_lib/routes/finance-month.js";
@@ -26,6 +27,7 @@ export const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promi
   today,
   routine,
   timeline,
+  calendar,
   bingo,
   finance,
   "finance-month": financeMonth,

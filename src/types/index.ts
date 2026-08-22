@@ -1,6 +1,7 @@
 /** Every widget kind the station knows how to render. */
 export type WidgetType =
   | "clock"
+  | "local-calendar"
   | "calendar"
   | "schedule"
   | "dday"

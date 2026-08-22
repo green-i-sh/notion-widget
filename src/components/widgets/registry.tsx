@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { WidgetConfig, WidgetType } from "../../types";
 import { ClockWidget } from "./ClockWidget";
+import { LocalCalendarWidget } from "./LocalCalendarWidget";
 import { CalendarWidget } from "./CalendarWidget";
 import { ScheduleWidget } from "./ScheduleWidget";
 import { DdayWidget } from "./DdayWidget";
@@ -43,7 +44,8 @@ interface Entry {
 /** Single source of truth. Adding a widget means adding one line here. */
 export const WIDGETS: Record<WidgetType, Entry> = {
   clock: { title: "Clock", Component: ClockWidget },
-  calendar: { title: "Calendar", Component: CalendarWidget },
+  "local-calendar": { title: "Calendar", Component: LocalCalendarWidget },
+  calendar: { title: "Calendar (Life)", Component: CalendarWidget, flush: true },
   schedule: { title: "Schedule", Component: ScheduleWidget },
   dday: { title: "D-Day", Component: DdayWidget },
   countdown: { title: "Countdown", Component: CountdownWidget },

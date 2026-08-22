@@ -108,6 +108,21 @@ export function fetchTimeline(date?: string, opts?: FetchOpts): Promise<Timeline
   return getJSON(withQuery("/api/timeline", { date }), opts);
 }
 
+export interface CalendarDay {
+  date: string;
+  pageId: string;
+  photo: string | null;
+}
+
+export interface CalendarMonth {
+  month: string;
+  days: CalendarDay[];
+}
+
+export function fetchCalendarMonth(month?: string, opts?: FetchOpts): Promise<CalendarMonth> {
+  return getJSON(withQuery("/api/calendar", { month }), opts);
+}
+
 export type BingoBoard = "monthly" | "quarterly";
 
 export interface BingoItem {

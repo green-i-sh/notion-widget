@@ -138,6 +138,18 @@ export function propMultiSelect(prop: unknown): string[] {
   return p?.type === "multi_select" ? (p.multi_select ?? []).map((t) => t.name) : [];
 }
 
+/** First file's URL from a `files` property — external link or Notion-hosted upload. */
+export function propFileUrl(prop: unknown): string | null {
+  const p = prop as {
+    type?: string;
+    files?: { type?: string; file?: { url?: string }; external?: { url?: string } }[];
+  } | undefined;
+  if (p?.type !== "files") return null;
+  const first = p.files?.[0];
+  if (!first) return null;
+  return (first.type === "external" ? first.external?.url : first.file?.url) ?? null;
+}
+
 export function propRelation(prop: unknown): string[] {
   const p = prop as { type?: string; relation?: { id: string }[] } | undefined;
   return p?.type === "relation" ? (p.relation ?? []).map((r) => r.id) : [];

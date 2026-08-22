@@ -22,7 +22,7 @@ const DEFAULT_APPEARANCE: Appearance = {
 /** Widgets shown on a fresh install, in reading order. */
 const STARTER: WidgetType[] = [
   "clock",
-  "calendar",
+  "local-calendar",
   "schedule",
   "dday",
   "todo",
@@ -49,7 +49,7 @@ function defaultWidgets(): WidgetConfig[] {
     id: `w-${type}`,
     type,
     visible: STARTER.includes(type),
-    size: type === "calendar" || type === "todo" || type === "timeline" ? "m" : "s",
+    size: type === "local-calendar" || type === "todo" || type === "timeline" ? "m" : "s",
     order: i,
     options: {},
   }));
