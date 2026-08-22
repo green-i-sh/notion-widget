@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { searchNaverBooks } from "../naver.js";
+import { searchKakaoBooks } from "../kakao.js";
 import { sendError, withCache } from "../http.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
@@ -10,7 +10,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   try {
-    const books = await searchNaverBooks(q);
+    const books = await searchKakaoBooks(q);
     withCache(res, 60);
     res.status(200).json({ query: q, books });
   } catch (err) {
