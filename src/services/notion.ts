@@ -245,11 +245,26 @@ export interface TripColumn {
   text: string;
 }
 
+export interface TripCategoryAmount {
+  category: string;
+  amount: number;
+}
+
+export interface TripExpense {
+  total: number;
+  categories: TripCategoryAmount[];
+}
+
 export interface TripData {
   found: boolean;
   name?: string;
   phase?: string;
+  cover?: string | null;
+  start?: string | null;
+  end?: string | null;
+  people?: number | null;
   columns?: TripColumn[];
+  expense?: TripExpense;
 }
 
 export function fetchTrip(trip?: string, opts?: FetchOpts): Promise<TripData> {
