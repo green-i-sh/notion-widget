@@ -1,13 +1,12 @@
 import { fetchTimeline, type TimelineEntry } from "../../services/notion";
 import { useApiData } from "../../hooks/useApiData";
-import { dateParam } from "../../utils/date";
+import { dateParam, pad2 } from "../../utils/date";
 
 const DAY_START = 7; // 07:00
 const DAY_END = 23; // 23:00
-const HOURS = Array.from({ length: DAY_END - DAY_START + 1 }, (_, i) => DAY_START + i);
-const ROW_HEIGHT = 36;
 const RANGE_START = DAY_START * 60;
-const RANGE_END = (DAY_END + 1) * 60;
+const RANGE_END = DAY_END * 60;
+const TICK_HOURS = [7, 10, 13, 16, 19, 22];
 
 /** Notion date properties come back with the workspace's own offset already
  *  embedded (e.g. "...T10:00:00+09:00"), so the local hour/minute can be
@@ -23,15 +22,18 @@ function formatMinutes(min: number): string {
   return h ? `${h}h ${m}m` : `${m}m`;
 }
 
-function block(entry: TimelineEntry, totalHeight: number) {
+function clamp(min: number): number {
+  return Math.min(Math.max(min, RANGE_START), RANGE_END);
+}
+
+function block(entry: TimelineEntry): { left: number; width: number } | null {
   if (!entry.start) return null;
-  const startMin = Math.min(Math.max(minutesFromISO(entry.start), RANGE_START), RANGE_END);
-  const endMin = entry.end
-    ? Math.min(Math.max(minutesFromISO(entry.end), RANGE_START), RANGE_END)
-    : startMin;
-  const top = ((startMin - RANGE_START) / (RANGE_END - RANGE_START)) * totalHeight;
-  const height = Math.max(((endMin - startMin) / (RANGE_END - RANGE_START)) * totalHeight, 16);
-  return { top, height };
+  const startMin = clamp(minutesFromISO(entry.start));
+  const endMin = entry.end ? clamp(minutesFromISO(entry.end)) : startMin;
+  const span = RANGE_END - RANGE_START;
+  const left = ((startMin - RANGE_START) / span) * 100;
+  const width = Math.max(((endMin - startMin) / span) * 100, 1.2);
+  return { left, width };
 }
 
 export function TimelineWidget() {
@@ -43,7 +45,6 @@ export function TimelineWidget() {
 
   const entries: TimelineEntry[] = day.entries;
   const totalMin = day.totalMin;
-  const totalHeight = HOURS.length * ROW_HEIGHT;
 
   return (
     <>
@@ -51,26 +52,34 @@ export function TimelineWidget() {
         <span className="muted">오늘</span>
         <span className="muted" style={{ marginLeft: "auto" }}>합계 {formatMinutes(totalMin)}</span>
       </div>
-      <div className="timeline" style={{ height: totalHeight }}>
-        {HOURS.map((h) => (
-          <div key={h} className="timeline-hour" style={{ height: ROW_HEIGHT }}>
-            {String(h).padStart(2, "0")}:00
-          </div>
-        ))}
-        {entries.map((entry) => {
-          const pos = block(entry, totalHeight);
-          if (!pos) return null;
-          return (
-            <div
-              key={entry.id}
-              className="timeline-block"
-              style={{ top: pos.top, height: pos.height }}
-              title={`${entry.title} · ${formatMinutes(entry.durationMin)}`}
+      <div className="timeline-h">
+        <div className="timeline-h-track">
+          {entries.map((entry, i) => {
+            const pos = block(entry);
+            if (!pos) return null;
+            return (
+              <div
+                key={entry.id}
+                className={`timeline-h-block ${i % 2 ? "green" : "lav"}`}
+                style={{ left: `${pos.left}%`, width: `${pos.width}%` }}
+                title={`${entry.title} · ${formatMinutes(entry.durationMin)}`}
+              >
+                {entry.title} {formatMinutes(entry.durationMin)}
+              </div>
+            );
+          })}
+        </div>
+        <div className="timeline-h-ticks">
+          {TICK_HOURS.map((h) => (
+            <span
+              key={h}
+              className="timeline-h-tick"
+              style={{ left: `${((h * 60 - RANGE_START) / (RANGE_END - RANGE_START)) * 100}%` }}
             >
-              {entry.title} · {formatMinutes(entry.durationMin)}
-            </div>
-          );
-        })}
+              {pad2(h)}:00
+            </span>
+          ))}
+        </div>
       </div>
       {!entries.length && <div className="empty">오늘 기록이 없습니다.</div>}
     </>

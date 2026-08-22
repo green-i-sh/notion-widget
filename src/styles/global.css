@@ -671,30 +671,53 @@ input[type="color"] {
   font-size: 13px;
 }
 
-.timeline {
+/* ---- timeline (Notion-backed, ?w=timeline) — horizontal single-track layout ---- */
+
+.timeline-h {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-h-track {
   position: relative;
-  border-bottom: 1px solid var(--border);
+  height: 60px;
+  background: var(--gray-bg);
+  border-radius: var(--radius);
 }
 
-.timeline-hour {
-  border-top: 1px solid var(--border);
-  font-size: 10.5px;
-  color: var(--subtext);
-  padding-top: 2px;
-}
-
-.timeline-block {
+.timeline-h-block {
   position: absolute;
-  left: 46px;
-  right: 2px;
-  background: var(--accent);
-  color: var(--surface);
+  top: 6px;
+  bottom: 6px;
   border-radius: 4px;
-  padding: 2px 6px;
+  border-left: 2px solid var(--lav-ink);
+  background: var(--lav-bg);
+  color: var(--text);
   font-size: 11px;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.timeline-h-block.green {
+  border-left-color: var(--green-ink);
+  background: var(--green-bg);
+}
+
+.timeline-h-ticks {
+  position: relative;
+  height: 14px;
+}
+
+.timeline-h-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10.5px;
+  color: var(--subtext);
 }
 
 /* ---- trip (Notion-backed, ?w=trip) ---- */
