@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { queryDatabase, retrievePage, propNumber, propString, propDateRange, propRelation } from "../notion.js";
+import { queryDatabase, retrievePage, propNumber, propNumberOrNull, propDateRange, propRelation } from "../notion.js";
 import { monthOf, todayKST } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
@@ -14,6 +14,8 @@ interface Stat {
   caption: string;
 }
 
+const DASH = "—";
+
 function won(n: number): string {
   return `₩${Math.round(Math.abs(n)).toLocaleString()}`;
 }
@@ -24,59 +26,47 @@ function hours(min: number): string {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-/** Monthly review has no rollups on the page itself (WIDGET-SPEC.md: the numbers
- *  are a Notion "Calculate" footer, which the API can't read) — aggregate
- *  Daily Log/Life/Bingo across the review's Period ourselves instead. */
-async function monthlyStats(start: string, end: string): Promise<Stat[]> {
-  const month = monthOf(start);
-
-  const [daily, life, budget, bingo] = await Promise.all([
-    queryDatabase(DB.dailyLog, {
-      filter: {
-        and: [
-          { property: "Date", date: { on_or_after: start } },
-          { property: "Date", date: { on_or_before: end } },
-        ],
-      },
-      page_size: 100,
-    }),
-    // Life's Month property type isn't confirmed (see routes/life.ts) — fetch and match in JS.
-    queryDatabase(DB.life, { page_size: 100 }),
-    queryDatabase(DB.budget, {
-      filter: { property: "Month", rich_text: { equals: month } },
-      page_size: 1,
-    }),
-    // Board is a select — Notion validates `equals` against the option list and
-    // 400s the whole request for a board that doesn't exist yet (e.g. next
-    // month's), so fetch unfiltered and match in JS instead.
-    queryDatabase(DB.bingo, { page_size: 100 }),
-  ]);
-
-  let tasksDone = 0;
-  let tasksTotal = 0;
-  let trackedMin = 0;
-  let expense = 0;
-  for (const page of daily.results) {
-    const p = page.properties;
-    tasksDone += propNumber(p["Tasks done"]);
-    tasksTotal += propNumber(p["Tasks total"]);
-    trackedMin += propNumber(p["Tracked"]);
-    expense += Math.abs(propNumber(p["Expense"]));
-  }
-
-  const lifeCount = life.results.filter((p) => propString(p.properties["Month"]) === month).length;
-  const budgetTotal = budget.results[0] ? propNumber(budget.results[0].properties["Budget"]) : null;
-  const monthBingo = bingo.results.filter((p) => propString(p.properties["Board"]) === `${month} Monthly`);
-  const bingoDone = monthBingo.filter((p) => {
-    const done = p.properties["Done"] as { type?: string; checkbox?: boolean } | undefined;
-    return done?.type === "checkbox" && done.checkbox;
-  }).length;
+/**
+ * Monthly Review pages already carry these as real number properties
+ * (WORK-ORDER.md #2) — reading them directly keeps this in sync with
+ * whatever the Notion page itself shows, instead of re-aggregating Daily
+ * Log/Life/Bingo here (which drifted from the mockup whenever a day's
+ * logging was thin). A property left empty in Notion renders as "—".
+ */
+function monthlyStats(properties: Record<string, unknown>): Stat[] {
+  const tasksDone = propNumberOrNull(properties["Tasks done"]);
+  const tasksTotal = propNumberOrNull(properties["Tasks total"]);
+  const trackedMin = propNumberOrNull(properties["Tracked (min)"]);
+  const expense = propNumberOrNull(properties["Expense"]);
+  const lifeCount = propNumberOrNull(properties["Life 건수"]);
+  const bingoDone = propNumberOrNull(properties["Bingo done"]);
+  const bingoTotal = propNumberOrNull(properties["Bingo total"]);
 
   return [
-    { key: "tasks", label: "Tasks", value: `${tasksDone} / ${tasksTotal}`, caption: "완료 / 전체" },
-    { key: "tracked", label: "Tracked", value: hours(trackedMin), caption: "기록된 시간" },
-    { key: "expense", label: "Expense", value: won(expense), caption: budgetTotal != null ? `예산 ${won(budgetTotal)}` : "예산 없음" },
-    { key: "life", label: "Life", value: `${lifeCount}건`, caption: `Bingo ${bingoDone} / ${monthBingo.length}` },
+    {
+      key: "tasks",
+      label: "Tasks",
+      value: tasksDone != null && tasksTotal != null ? `${tasksDone} / ${tasksTotal}` : DASH,
+      caption: "완료 / 전체",
+    },
+    {
+      key: "tracked",
+      label: "Tracked",
+      value: trackedMin != null ? hours(trackedMin) : DASH,
+      caption: "기록된 시간",
+    },
+    {
+      key: "expense",
+      label: "Expense",
+      value: expense != null ? won(expense) : DASH,
+      caption: "이번 달 지출",
+    },
+    {
+      key: "life",
+      label: "Life",
+      value: lifeCount != null ? `${lifeCount}건` : DASH,
+      caption: bingoDone != null && bingoTotal != null ? `Bingo ${bingoDone} / ${bingoTotal}` : "Bingo —",
+    },
   ];
 }
 
@@ -200,16 +190,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return;
     }
 
-    let stats: Stat[];
-    if (type === "Monthly") {
-      const range = propDateRange(page.properties["Period"]);
-      const start = range.start?.slice(0, 10);
-      const end = (range.end ?? range.start)?.slice(0, 10);
-      if (!start || !end) throw new Error("Review 페이지에 Period 날짜가 없습니다.");
-      stats = await monthlyStats(start, end);
-    } else {
-      stats = await quarterlyStats(page.properties);
-    }
+    const stats = type === "Monthly" ? monthlyStats(page.properties) : await quarterlyStats(page.properties);
 
     withCache(res);
     res.status(200).json({ type, found: true, stats });

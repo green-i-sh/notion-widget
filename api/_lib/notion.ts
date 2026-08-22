@@ -90,6 +90,18 @@ export function propNumber(prop: unknown): number {
   return typeof value === "number" ? value : 0;
 }
 
+/** Like propNumber, but distinguishes "never set" from a real 0 — used where
+ *  WIDGET-SPEC/WORK-ORDER call for a `—` when a rollup/number property is empty. */
+export function propNumberOrNull(prop: unknown): number | null {
+  const p = prop as { type?: string; rollup?: { number?: number }; formula?: { number?: number }; number?: number } | undefined;
+  const value =
+    p?.type === "rollup" ? p.rollup?.number
+    : p?.type === "formula" ? p.formula?.number
+    : p?.type === "number" ? p.number
+    : undefined;
+  return typeof value === "number" ? value : null;
+}
+
 export function propString(prop: unknown): string {
   const p = prop as {
     type?: string;
