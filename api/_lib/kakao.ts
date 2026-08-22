@@ -25,6 +25,31 @@ interface KakaoApiDocument {
   datetime: string;
 }
 
+/**
+ * Kakao's `thumbnail` is a 120x174 resize proxy that mangles the cover in
+ * Notion's gallery, and its `fname` query param — the real cover URL — often
+ * comes back as http://, which Notion blocks as mixed content. Pull that
+ * original URL out and force it to https; if there's no fname, or the URL
+ * can't be parsed at all, fall back to the thumbnail as given. Anything that
+ * still isn't https after that never reaches Notion — better an empty cover
+ * than a blocked one.
+ */
+export function resolveOriginalImageUrl(thumbnail: string): string {
+  let candidate = thumbnail;
+
+  try {
+    const fname = new URL(thumbnail).searchParams.get("fname");
+    if (fname) {
+      const decoded = decodeURIComponent(fname);
+      candidate = decoded.startsWith("http://") ? `https://${decoded.slice("http://".length)}` : decoded;
+    }
+  } catch {
+    // Malformed thumbnail URL — keep the original string as the fallback candidate.
+  }
+
+  return candidate.startsWith("https://") ? candidate : "";
+}
+
 export async function searchKakaoBooks(query: string): Promise<KakaoBook[]> {
   const key = process.env.KAKAO_REST_API_KEY;
   if (!key) throw new KakaoKeyMissingError();
@@ -40,7 +65,7 @@ export async function searchKakaoBooks(query: string): Promise<KakaoBook[]> {
   return (data.documents ?? []).map((doc) => ({
     title: doc.title,
     author: (doc.authors ?? []).join(" · "),
-    image: doc.thumbnail,
+    image: resolveOriginalImageUrl(doc.thumbnail),
     publisher: doc.publisher,
     pubdate: doc.datetime?.slice(0, 4) ?? "",
   }));
