@@ -15,8 +15,9 @@ export function TodayWidget() {
 
   if (error) return <div className="error">{error}</div>;
   if (!summary) return <div className="empty">불러오는 중</div>;
-  if (!summary.found) return <div className="empty">해당 날짜의 Daily Log가 아직 없습니다.</div>;
 
+  // Daily Log row for the date may not exist yet — today widget only ever
+  // reads, never creates one (WORK-ORDER #1), so a missing row just shows 0s.
   const { tasksDone = 0, tasksTotal = 0, trackedMin = 0, expense = 0, morningPage } = summary;
   const written = morningPage === "작성";
 

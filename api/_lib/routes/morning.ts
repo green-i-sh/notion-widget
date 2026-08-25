@@ -1,5 +1,6 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
 import { queryDatabase, updatePageProperties, propString, richTextProperty } from "../notion.js";
+import { ensureDailyLogPage } from "../dailyLog.js";
 import { todayKST } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
@@ -57,15 +58,7 @@ async function handleWrite(req: ApiRequest, res: ApiResponse) {
   }
 
   try {
-    const result = await queryDatabase(DB.dailyLog, {
-      filter: { property: "Date", date: { equals: body.date } },
-      page_size: 1,
-    });
-    const page = result.results[0];
-    if (!page) {
-      res.status(404).json({ error: "해당 날짜의 Daily Log가 없습니다.", date: body.date });
-      return;
-    }
+    const page = await ensureDailyLogPage(body.date);
 
     const properties: Record<string, unknown> = { [FIELD_PROPERTY[field]]: richTextProperty(body.value) };
     if (field === "morning") {

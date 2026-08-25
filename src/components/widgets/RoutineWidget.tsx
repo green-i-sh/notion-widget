@@ -21,13 +21,12 @@ export function RoutineWidget() {
   if (!week) return <div className="empty">불러오는 중</div>;
 
   const toggle = async (day: RoutineDay, routine: Routine) => {
-    if (!day.pageId || !day.values) return;
     const key = `${day.date}:${routine}`;
-    const next = !day.values[routine];
+    const next = !(day.values?.[routine] ?? false);
     setToggleError(null);
     setPending((p) => ({ ...p, [key]: next }));
     try {
-      await toggleRoutine(day.pageId, routine, next);
+      await toggleRoutine(day.date, routine, next);
       await refresh({ bust: true });
     } catch (err) {
       setToggleError(err instanceof Error ? err.message : String(err));
@@ -56,9 +55,6 @@ export function RoutineWidget() {
               {week.days.map((day, i) => {
                 const key = `${day.date}:${routine}`;
                 const on = pending[key] ?? day.values?.[routine] ?? false;
-                if (!day.pageId) {
-                  return <button key={day.date} type="button" className="routine-cell" disabled aria-label={`${day.date} 기록 없음`} />;
-                }
                 return (
                   <button
                     key={day.date}

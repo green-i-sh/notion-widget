@@ -1,5 +1,6 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
 import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from "../notion.js";
+import { ensureDailyLogPage } from "../dailyLog.js";
 import { mondayOf, addDays, todayKST } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
@@ -54,16 +55,17 @@ async function handleWeek(req: ApiRequest, res: ApiResponse) {
 }
 
 async function handleToggle(req: ApiRequest, res: ApiResponse) {
-  const body = (req.body ?? {}) as { pageId?: string; routine?: string; value?: boolean };
+  const body = (req.body ?? {}) as { date?: string; routine?: string; value?: boolean };
   const routine = body.routine as Routine;
-  if (!body.pageId || !ROUTINES.includes(routine) || typeof body.value !== "boolean") {
+  if (!body.date || !ROUTINES.includes(routine) || typeof body.value !== "boolean") {
     res.status(400).json({ error: "잘못된 요청입니다." });
     return;
   }
   try {
-    await updatePageProperties(body.pageId, { [routine]: { checkbox: body.value } });
+    const page = await ensureDailyLogPage(body.date);
+    await updatePageProperties(page.id, { [routine]: { checkbox: body.value } });
     res.status(200).json({ ok: true });
   } catch (err) {
-    sendError(res, err, { endpoint: "routine", databaseId: DB.dailyLog, pageId: body.pageId, routine });
+    sendError(res, err, { endpoint: "routine", databaseId: DB.dailyLog, date: body.date, routine });
   }
 }

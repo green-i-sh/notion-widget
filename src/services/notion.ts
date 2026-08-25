@@ -113,8 +113,8 @@ export function fetchRoutineWeek(date?: string, opts?: FetchOpts): Promise<Routi
   return getJSON(withQuery("/api/routine", { date }), opts);
 }
 
-export function toggleRoutine(pageId: string, routine: Routine, value: boolean): Promise<void> {
-  return postJSON("/api/routine", { pageId, routine, value });
+export function toggleRoutine(date: string, routine: Routine, value: boolean): Promise<void> {
+  return postJSON("/api/routine", { date, routine, value });
 }
 
 export function fetchTimeline(date?: string, opts?: FetchOpts): Promise<TimelineDay> {
@@ -123,7 +123,8 @@ export function fetchTimeline(date?: string, opts?: FetchOpts): Promise<Timeline
 
 export interface CalendarDay {
   date: string;
-  pageId: string;
+  /** Daily Log page id for this date, or null if that date has no Daily Log row yet. */
+  pageId: string | null;
   photo: string | null;
 }
 
