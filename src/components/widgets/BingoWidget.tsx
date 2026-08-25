@@ -42,11 +42,11 @@ export function BingoWidget() {
       {toggleError && <div className="error">{toggleError}</div>}
       <div className="muted">Done {done} / {data.items.length}</div>
       <div className="bingo-grid">
-        {shown.map((item) => {
+        {shown.map((item, i) => {
           const checked = pending[item.id] ?? item.done;
           return (
-            <div key={item.id} className="bingo-card">
-              <div className="bingo-no">{String(item.no).padStart(2, "0")}</div>
+            <div key={item.id} className={`bingo-card${checked ? " done" : ""}`}>
+              <div className="bingo-no">{String(i + 1).padStart(2, "0")}</div>
               <div className="bingo-body">
                 <div className="bingo-title">{item.name}</div>
                 <span className={`embed-chip ${checked ? "green" : "gray"}`}>{checked ? "Done" : "미완료"}</span>
@@ -56,9 +56,6 @@ export function BingoWidget() {
           );
         })}
       </div>
-      {data.items.length > 9 && (
-        <div className="muted">9칸을 초과한 {data.items.length - 9}개 항목은 표시되지 않습니다.</div>
-      )}
     </>
   );
 }
