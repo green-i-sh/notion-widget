@@ -10,6 +10,7 @@ import inbox from "./_lib/routes/inbox.js";
 import next from "./_lib/routes/next.js";
 import projects from "./_lib/routes/projects.js";
 import taskcal from "./_lib/routes/taskcal.js";
+import add from "./_lib/routes/add.js";
 import finance from "./_lib/routes/finance.js";
 import financeMonth from "./_lib/routes/finance-month.js";
 import life from "./_lib/routes/life.js";
@@ -41,6 +42,7 @@ export const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promi
   next,
   projects,
   taskcal,
+  add,
   finance,
   "finance-month": financeMonth,
   life,

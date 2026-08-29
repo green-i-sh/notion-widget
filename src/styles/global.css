@@ -1101,6 +1101,40 @@ input[type="color"] {
   text-decoration: none;
 }
 
+/* ---- add (Notion-backed, ?w=add&to=...) — one-line quick-add bar ---- */
+
+.add-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+}
+
+.add-bar-label {
+  flex: none;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.add-bar-done {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--green-ink);
+}
+
+.add-bar-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.add-bar-amount {
+  flex: none;
+  width: 70px;
+}
+
 /* ---- settings panel ---- */
 
 .overlay {

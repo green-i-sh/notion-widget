@@ -36,6 +36,7 @@ import { InboxWidget } from "./InboxWidget";
 import { NextWidget } from "./NextWidget";
 import { ProjectsWidget } from "./ProjectsWidget";
 import { TaskCalWidget } from "./TaskCalWidget";
+import { AddWidget } from "./AddWidget";
 
 /** Widgets receive their config; most ignore it. */
 export type WidgetProps = { config: WidgetConfig };
@@ -85,4 +86,5 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   next: { title: "Next Actions", Component: NextWidget, flush: true },
   projects: { title: "Projects", Component: ProjectsWidget, flush: true },
   taskcal: { title: "Task Calendar", Component: TaskCalWidget, flush: true },
+  add: { title: "Quick Add", Component: AddWidget, flush: true },
 };

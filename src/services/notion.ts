@@ -458,3 +458,9 @@ export interface TaskCalData {
 export function fetchTaskCal(month?: string, opts?: FetchOpts): Promise<TaskCalData> {
   return getJSON(withQuery("/api/taskcal", { month }), opts);
 }
+
+export type AddTarget = "task" | "expense" | "income" | "life" | "letter";
+
+export function addEntry(to: AddTarget, title: string, amount?: number): Promise<void> {
+  return postJSON("/api/add", { to, title, amount });
+}
