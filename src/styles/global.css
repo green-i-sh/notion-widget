@@ -651,15 +651,20 @@ input[type="color"] {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  user-select: none;
 }
 
 .bingo-card.done {
-  background: var(--lav-bg);
+  background: var(--accent);
   border-color: transparent;
 }
 
+.bingo-card.done .bingo-no {
+  color: var(--surface);
+}
+
 .bingo-no {
-  background: var(--lav-bg);
   color: var(--subtext);
   font-size: 11px;
   padding: 4px 8px;
@@ -678,7 +683,7 @@ input[type="color"] {
 }
 
 .bingo-card.done .bingo-title {
-  color: var(--lav-ink);
+  color: var(--surface);
 }
 
 /* ---- timeline (Notion-backed, ?w=timeline) — vertical time-log track ---- */

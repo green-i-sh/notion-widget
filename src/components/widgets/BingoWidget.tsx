@@ -45,12 +45,17 @@ export function BingoWidget() {
         {shown.map((item, i) => {
           const checked = pending[item.id] ?? item.done;
           return (
-            <div key={item.id} className={`bingo-card${checked ? " done" : ""}`}>
+            <div
+              key={item.id}
+              className={`bingo-card${checked ? " done" : ""}`}
+              onClick={() => toggle(item)}
+              role="checkbox"
+              aria-checked={checked}
+              aria-label={item.name}
+            >
               <div className="bingo-no">{String(i + 1).padStart(2, "0")}</div>
               <div className="bingo-body">
                 <div className="bingo-title">{item.name}</div>
-                <span className={`embed-chip ${checked ? "green" : "gray"}`}>{checked ? "Done" : "미완료"}</span>
-                <input type="checkbox" checked={checked} onChange={() => toggle(item)} aria-label={item.name} />
               </div>
             </div>
           );
