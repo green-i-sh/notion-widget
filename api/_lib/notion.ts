@@ -245,16 +245,21 @@ export function propMultiSelect(prop: unknown): string[] {
   return p?.type === "multi_select" ? (p.multi_select ?? []).map((t) => t.name) : [];
 }
 
-/** First file's URL from a `files` property — external link or Notion-hosted upload. */
-export function propFileUrl(prop: unknown): string | null {
+/** Every file's URL from a `files` property — external link or Notion-hosted upload, in stored order. */
+export function propFileUrls(prop: unknown): string[] {
   const p = prop as {
     type?: string;
     files?: { type?: string; file?: { url?: string }; external?: { url?: string } }[];
   } | undefined;
-  if (p?.type !== "files") return null;
-  const first = p.files?.[0];
-  if (!first) return null;
-  return (first.type === "external" ? first.external?.url : first.file?.url) ?? null;
+  if (p?.type !== "files") return [];
+  return (p.files ?? [])
+    .map((f) => (f.type === "external" ? f.external?.url : f.file?.url))
+    .filter((url): url is string => Boolean(url));
+}
+
+/** First file's URL from a `files` property. */
+export function propFileUrl(prop: unknown): string | null {
+  return propFileUrls(prop)[0] ?? null;
 }
 
 export function propRelation(prop: unknown): string[] {

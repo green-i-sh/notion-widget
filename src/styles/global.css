@@ -780,35 +780,10 @@ input[type="color"] {
   gap: var(--gap);
 }
 
-.trip-cover {
-  position: relative;
-  aspect-ratio: 16 / 7;
-  border-radius: var(--radius);
-  background-color: var(--gray-bg);
-  background-size: cover;
-  background-position: center;
+.trip-header {
   display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-}
-
-.trip-cover.has-cover::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55));
-}
-
-.trip-cover-meta {
-  position: relative;
-  z-index: 1;
-  padding: 14px 16px;
-  width: 100%;
-  color: var(--text);
-}
-
-.trip-cover.has-cover .trip-cover-meta {
-  color: rgba(255, 255, 255, 0.95);
+  flex-direction: column;
+  gap: 4px;
 }
 
 .trip-cover-sub {
@@ -816,14 +791,23 @@ input[type="color"] {
   color: var(--subtext);
 }
 
-.trip-cover.has-cover .trip-cover-sub {
-  color: rgba(255, 255, 255, 0.85);
-}
-
 .trip-name {
   font-family: var(--serif);
-  font-size: 20px;
-  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.trip-photos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.trip-photo {
+  aspect-ratio: 1;
+  border-radius: calc(var(--radius) * 0.6);
+  background-color: var(--gray-bg);
+  background-size: cover;
+  background-position: center;
 }
 
 .trip-expense {

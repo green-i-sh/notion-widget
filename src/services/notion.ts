@@ -273,7 +273,7 @@ export interface TripData {
   found: boolean;
   name?: string;
   phase?: string;
-  cover?: string | null;
+  photos?: string[];
   start?: string | null;
   end?: string | null;
   people?: string | null;

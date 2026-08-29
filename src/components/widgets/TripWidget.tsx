@@ -39,20 +39,28 @@ export function TripWidget() {
 
   const maxAmount = Math.max(1, ...(data.expense?.categories.map((c) => c.amount) ?? [0]));
 
+  const photos = data.photos ?? [];
+
   return (
     <div className="trip-album">
-      <div className={`trip-cover${data.cover ? " has-cover" : ""}`} style={data.cover ? { backgroundImage: `url(${data.cover})` } : undefined}>
-        <div className="trip-cover-meta">
-          <div className="trip-name">{data.name}</div>
-          <div className="row" style={{ gap: 8 }}>
-            {data.phase && <span className="embed-chip lav">{data.phase}</span>}
-            <span className="trip-cover-sub">
-              {formatRange(data.start, data.end)}
-              {data.people ? ` · ${data.people}` : ""}
-            </span>
-          </div>
+      <div className="trip-header">
+        <div className="trip-name">{data.name}</div>
+        <div className="row" style={{ gap: 8 }}>
+          {data.phase && <span className="embed-chip lav">{data.phase}</span>}
+          <span className="trip-cover-sub">
+            {formatRange(data.start, data.end)}
+            {data.people ? ` · ${data.people}` : ""}
+          </span>
         </div>
       </div>
+
+      {photos.length > 0 && (
+        <div className="trip-photos">
+          {photos.map((url) => (
+            <div key={url} className="trip-photo" style={{ backgroundImage: `url(${url})` }} />
+          ))}
+        </div>
+      )}
 
       <div className="trip-cols">
         {data.columns.map((col) => (

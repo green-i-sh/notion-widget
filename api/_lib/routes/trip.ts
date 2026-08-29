@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { queryDatabase, propString, propNumber, propDateRange, propFileUrl } from "../notion.js";
+import { queryDatabase, propString, propNumber, propDateRange, propFileUrls } from "../notion.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
 
@@ -37,6 +37,20 @@ async function tripExpense(start: string | null, end: string | null): Promise<{ 
     .map(([category, amount]) => ({ category, amount }))
     .sort((a, b) => b.amount - a.amount);
   return { total, categories };
+}
+
+const MAX_PHOTOS = 4;
+
+/** Up to MAX_PHOTOS items, randomly picked when there are more than that
+ *  (Fisher-Yates, partial); all of them, in order, otherwise. */
+function pickPhotos(urls: string[]): string[] {
+  if (urls.length <= MAX_PHOTOS) return urls;
+  const pool = [...urls];
+  for (let i = pool.length - 1; i > pool.length - 1 - MAX_PHOTOS; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(pool.length - MAX_PHOTOS);
 }
 
 /** No `?trip=` given: prefer the nearest upcoming Planning trip; if none is
@@ -86,7 +100,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       found: true,
       name: propString(p["Name"]),
       phase: propString(p["Phase"]),
-      cover: propFileUrl(p["Cover"]),
+      photos: pickPhotos(propFileUrls(p["Cover"])),
       start,
       end,
       people: propString(p["People"]) || null,
