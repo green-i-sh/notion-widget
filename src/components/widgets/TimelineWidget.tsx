@@ -6,7 +6,7 @@ const DAY_START = 7; // 07:00
 const DAY_END = 23; // 23:00
 const RANGE_START = DAY_START * 60;
 const RANGE_END = DAY_END * 60;
-const HOUR_PX = 28; // (DAY_END - DAY_START) * HOUR_PX = 448px, matches the ~450px spec
+const HOUR_PX = 36; // (DAY_END - DAY_START) * HOUR_PX = 576px
 const PX_PER_MIN = HOUR_PX / 60;
 const TRACK_HEIGHT = (RANGE_END - RANGE_START) * PX_PER_MIN;
 const MIN_BLOCK_HEIGHT = 4;

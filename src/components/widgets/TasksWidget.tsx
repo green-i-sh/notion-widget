@@ -16,8 +16,21 @@ export function TasksWidget() {
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  // Notion's date properties only store minute precision, and start/pause
+  // both round-trip a network call before the server's view updates — so a
+  // plain "read active.start back from the server" timer visibly starts
+  // partway into a minute and takes a beat to appear. Track our own click
+  // moment here (full precision, instant) and only fall back to the
+  // server's value on a fresh load, where restoring from *some* value beats
+  // showing nothing — see the reconcile effect below.
+  const [optimistic, setOptimistic] = useState<{ taskId: string; start: string } | null>(null);
 
-  const active = data?.active ?? null;
+  const serverActive = data?.active ?? null;
+  const active = optimistic ?? serverActive;
+
+  useEffect(() => {
+    if (optimistic && (!serverActive || serverActive.taskId !== optimistic.taskId)) setOptimistic(null);
+  }, [optimistic, serverActive]);
 
   useEffect(() => {
     if (!active) return;
@@ -37,12 +50,14 @@ export function TasksWidget() {
 
   const act = async (action: TaskAction, task: TaskItem) => {
     setActionError(null);
+    setOptimistic(action === "start" ? { taskId: task.id, start: new Date().toISOString() } : null);
     setBusy(task.id);
     try {
       await runTaskAction(action, task.id);
       await refresh({ bust: true });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : String(err));
+      setOptimistic(null);
     } finally {
       setBusy(null);
     }
