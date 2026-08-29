@@ -39,18 +39,37 @@ async function tripExpense(start: string | null, end: string | null): Promise<{ 
   return { total, categories };
 }
 
+/** No `?trip=` given: prefer the nearest upcoming Planning trip; if none is
+ *  planned, fall back to the most recently completed (After Trip) one. */
+async function pickDefaultTrip(): Promise<{ id: string; properties: Record<string, unknown> } | undefined> {
+  const planning = await queryDatabase(DB.trips, {
+    filter: { property: "Phase", select: { equals: "Planning" } },
+    sorts: [{ property: "Date", direction: "ascending" }],
+    page_size: 1,
+  });
+  if (planning.results[0]) return planning.results[0];
+
+  const past = await queryDatabase(DB.trips, {
+    filter: { property: "Phase", select: { equals: "After Trip" } },
+    sorts: [{ property: "Date", direction: "descending" }],
+    page_size: 1,
+  });
+  return past.results[0];
+}
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const tripName = typeof req.query.trip === "string" ? req.query.trip : undefined;
 
   try {
-    const result = await queryDatabase(DB.trips, {
-      filter: tripName
-        ? { property: "Name", title: { equals: tripName } }
-        : { property: "Phase", select: { equals: "After Trip" } },
-      page_size: 1,
-    });
+    const page = tripName
+      ? (
+          await queryDatabase(DB.trips, {
+            filter: { property: "Name", title: { equals: tripName } },
+            page_size: 1,
+          })
+        ).results[0]
+      : await pickDefaultTrip();
 
-    const page = result.results[0];
     if (!page) {
       res.status(200).json({ found: false });
       return;
