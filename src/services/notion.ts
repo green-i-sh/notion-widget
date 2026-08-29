@@ -384,3 +384,77 @@ export function fetchTasks(date?: string, opts?: FetchOpts): Promise<TasksData> 
 export function runTaskAction(action: TaskAction, taskId: string): Promise<void> {
   return postJSON("/api/tasks", { action, taskId });
 }
+
+export interface InboxTask {
+  id: string;
+  name: string;
+  status: string;
+  priority: string;
+  context: string[];
+  when: string;
+}
+
+export function fetchInbox(opts?: FetchOpts): Promise<{ tasks: InboxTask[] }> {
+  return getJSON("/api/inbox", opts);
+}
+
+export interface NextTask {
+  id: string;
+  name: string;
+  priority: string;
+  context: string[];
+  due: string | null;
+  trackedMin: number;
+}
+
+export function fetchNext(opts?: FetchOpts): Promise<{ tasks: NextTask[] }> {
+  return getJSON("/api/next", opts);
+}
+
+export interface ProjectRow {
+  id: string;
+  name: string;
+  subCount: number;
+}
+
+export interface WaitingRow {
+  id: string;
+  name: string;
+  due: string | null;
+}
+
+export interface SomedayRow {
+  id: string;
+  name: string;
+  status: string;
+}
+
+export interface ProjectsData {
+  projects: ProjectRow[];
+  waiting: WaitingRow[];
+  someday: SomedayRow[];
+}
+
+export function fetchProjects(opts?: FetchOpts): Promise<ProjectsData> {
+  return getJSON("/api/projects", opts);
+}
+
+export interface TaskCalTask {
+  id: string;
+  name: string;
+  priority: string;
+}
+
+export interface TaskCalDay {
+  date: string;
+  tasks: TaskCalTask[];
+}
+
+export interface TaskCalData {
+  month: string;
+  days: TaskCalDay[];
+}
+
+export function fetchTaskCal(month?: string, opts?: FetchOpts): Promise<TaskCalData> {
+  return getJSON(withQuery("/api/taskcal", { month }), opts);
+}

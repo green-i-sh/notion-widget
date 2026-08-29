@@ -1,12 +1,9 @@
 import { fetchCalendarMonth } from "../../services/notion";
 import { useApiData } from "../../hooks/useApiData";
 import { monthGrid, todayISO, monthParam, WEEKDAYS_KO } from "../../utils/date";
+import { notionUrl } from "../../utils/notionUrl";
 
 const DOW = WEEKDAYS_KO;
-
-function notionUrl(pageId: string): string {
-  return `https://www.notion.so/${pageId.replace(/-/g, "")}`;
-}
 
 /** Life-photo month calendar (WORK-ORDER.md #6) — one Life record's photo
  *  per day, for the ?w=calendar Notion embed. Clicking a day opens that

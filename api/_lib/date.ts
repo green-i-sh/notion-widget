@@ -38,6 +38,15 @@ export function monthOf(iso: string = todayKST()): string {
   return iso.slice(0, 7).replace("-", ".");
 }
 
+/** Start/end YYYY-MM-DD for a "YYYY.MM" month — day 0 of the next JS month
+ *  rolls back to the last day of this one, so no separate leap-year math. */
+export function monthDateRange(month: string): { start: string; end: string } {
+  const [y, m] = month.split(".").map(Number);
+  const start = `${month.replace(".", "-")}-01`;
+  const end = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+  return { start, end };
+}
+
 /** The "YYYY.MM" one calendar month before the given "YYYY.MM". */
 export function prevMonthOf(month: string): string {
   const [y, m] = month.split(".").map(Number);

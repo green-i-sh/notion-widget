@@ -31,7 +31,11 @@ export type WidgetType =
   | "morning"
   | "meta"
   | "book-add"
-  | "tasks";
+  | "tasks"
+  | "inbox"
+  | "next"
+  | "projects"
+  | "taskcal";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";
