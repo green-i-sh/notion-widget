@@ -8,15 +8,6 @@ function notionUrl(pageId: string): string {
   return `https://www.notion.so/${pageId.replace(/-/g, "")}`;
 }
 
-/** Plain-click opens the Daily Log as a small popup window instead of a full
- *  browser tab; ctrl/cmd/middle-click still falls through to the href so
- *  "open in new tab" keeps working. */
-function openDailyLog(e: React.MouseEvent, url: string) {
-  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
-  e.preventDefault();
-  window.open(url, "dailyLog", "noopener,noreferrer,width=480,height=760");
-}
-
 /** Life-photo month calendar (WORK-ORDER.md #6) — one Life record's photo
  *  per day, for the ?w=calendar Notion embed. Clicking a day opens that
  *  date's Daily Log page (not the Life record). Not the dashboard's local
@@ -57,9 +48,8 @@ export function CalendarWidget() {
         );
 
         if (entry?.pageId) {
-          const url = notionUrl(entry.pageId);
           return (
-            <a key={iso} href={url} target="_blank" rel="noreferrer" className={cls} onClick={(e) => openDailyLog(e, url)}>
+            <a key={iso} href={notionUrl(entry.pageId)} target="_blank" rel="noreferrer" className={cls}>
               {content}
             </a>
           );
