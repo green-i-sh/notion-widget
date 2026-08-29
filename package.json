@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:api": "tsc --project tsconfig.api.json --noEmit false --outDir .tmp-api-build && node .tmp-api-build/_lib/routeDispatch.test.js && node .tmp-api-build/_lib/kakao.test.js"
+    "test:api": "tsc --project tsconfig.api.json --noEmit false --outDir .tmp-api-build && node .tmp-api-build/_lib/routeDispatch.test.js && node .tmp-api-build/_lib/kakao.test.js && node .tmp-api-build/_lib/bingo.test.js"
   },
   "dependencies": {
     "react": "^18.3.1",
