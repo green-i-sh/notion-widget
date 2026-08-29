@@ -2,7 +2,7 @@ import { fetchCalendarMonth } from "../../services/notion";
 import { useApiData } from "../../hooks/useApiData";
 import { monthGrid, todayISO, monthParam, WEEKDAYS_KO } from "../../utils/date";
 
-const DOW = [1, 2, 3, 4, 5, 6, 0].map((i) => WEEKDAYS_KO[i]);
+const DOW = WEEKDAYS_KO;
 
 function notionUrl(pageId: string): string {
   return `https://www.notion.so/${pageId.replace(/-/g, "")}`;
@@ -26,7 +26,7 @@ export function CalendarWidget() {
   if (!data) return <div className="empty">불러오는 중</div>;
 
   const byDate = new Map(data.days.map((d) => [d.date, d]));
-  const cells = monthGrid(year, month0);
+  const cells = monthGrid(year, month0, true);
 
   return (
     <div className="photo-cal-grid" role="grid">

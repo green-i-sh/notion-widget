@@ -68,10 +68,10 @@ export function weekDates(from: Date = new Date()): string[] {
   });
 }
 
-/** Month laid out in whole Monday-first weeks. null marks padding cells. */
-export function monthGrid(year: number, month: number): (string | null)[] {
+/** Month laid out in whole weeks, Monday-first by default. null marks padding cells. */
+export function monthGrid(year: number, month: number, startSunday = false): (string | null)[] {
   const first = new Date(year, month, 1);
-  const lead = (first.getDay() + 6) % 7;
+  const lead = startSunday ? first.getDay() : (first.getDay() + 6) % 7;
   const total = new Date(year, month + 1, 0).getDate();
   const cells: (string | null)[] = Array(lead).fill(null);
   for (let d = 1; d <= total; d += 1) {
