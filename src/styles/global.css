@@ -656,12 +656,8 @@ input[type="color"] {
 }
 
 .bingo-card.done {
-  background: var(--accent);
+  background: var(--lav-bg);
   border-color: transparent;
-}
-
-.bingo-card.done .bingo-no {
-  color: var(--surface);
 }
 
 .bingo-no {
@@ -683,7 +679,7 @@ input[type="color"] {
 }
 
 .bingo-card.done .bingo-title {
-  color: var(--surface);
+  color: var(--lav-ink);
 }
 
 /* ---- timeline (Notion-backed, ?w=timeline) — vertical time-log track ---- */
