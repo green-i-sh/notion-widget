@@ -1,7 +1,7 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
 import { updatePageProperties } from "../notion.js";
 import { fetchBingoRows, latestBoard } from "../bingo.js";
-import { sendError, withCache } from "../http.js";
+import { sendError } from "../http.js";
 import { DB } from "../db.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
@@ -20,7 +20,9 @@ async function handleBoard(req: ApiRequest, res: ApiResponse) {
     const rows = await fetchBingoRows();
     const { board, items } = latestBoard(rows, label);
 
-    withCache(res);
+    // No withCache here — unlike the read-only widgets, this board is toggled
+    // in place, so a CDN cache would show a stale pre-toggle state to the
+    // next page load for up to its TTL.
     res.status(200).json({ board, items, done: items.filter((i) => i.done).length, total: items.length });
   } catch (err) {
     sendError(res, err, { endpoint: "bingo", databaseId: DB.bingo });
