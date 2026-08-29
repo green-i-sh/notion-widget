@@ -353,3 +353,34 @@ export interface AddBookPayload {
 export function addBook(payload: AddBookPayload): Promise<{ ok: boolean; duplicate: boolean; coverUploaded: boolean }> {
   return postJSONResult("/api/book-add", payload);
 }
+
+export interface TaskItem {
+  id: string;
+  name: string;
+  priority: string;
+  context: string[];
+  trackedMin: number;
+  done: boolean;
+}
+
+export interface ActiveTimeLog {
+  taskId: string;
+  /** ISO datetime with +09:00 offset — parses correctly with `new Date()` regardless of the viewer's own timezone. */
+  start: string;
+}
+
+export interface TasksData {
+  date: string;
+  tasks: TaskItem[];
+  active: ActiveTimeLog | null;
+}
+
+export type TaskAction = "start" | "pause" | "done";
+
+export function fetchTasks(date?: string, opts?: FetchOpts): Promise<TasksData> {
+  return getJSON(withQuery("/api/tasks", { date }), opts);
+}
+
+export function runTaskAction(action: TaskAction, taskId: string): Promise<void> {
+  return postJSON("/api/tasks", { action, taskId });
+}

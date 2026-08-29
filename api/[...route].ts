@@ -5,6 +5,7 @@ import routine from "./_lib/routes/routine.js";
 import timeline from "./_lib/routes/timeline.js";
 import calendar from "./_lib/routes/calendar.js";
 import bingo from "./_lib/routes/bingo.js";
+import tasks from "./_lib/routes/tasks.js";
 import finance from "./_lib/routes/finance.js";
 import financeMonth from "./_lib/routes/finance-month.js";
 import life from "./_lib/routes/life.js";
@@ -31,6 +32,7 @@ export const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promi
   timeline,
   calendar,
   bingo,
+  tasks,
   finance,
   "finance-month": financeMonth,
   life,

@@ -31,6 +31,7 @@ import { StreakWidget } from "./StreakWidget";
 import { MorningWidget } from "./MorningWidget";
 import { MetaWidget } from "./MetaWidget";
 import { BookAddWidget } from "./BookAddWidget";
+import { TasksWidget } from "./TasksWidget";
 
 /** Widgets receive their config; most ignore it. */
 export type WidgetProps = { config: WidgetConfig };
@@ -75,4 +76,5 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   morning: { title: "Morning", Component: MorningWidget, flush: true },
   meta: { title: "Meta", Component: MetaWidget, flush: true },
   "book-add": { title: "Book Add", Component: BookAddWidget, flush: true },
+  tasks: { title: "Tasks", Component: TasksWidget, flush: true },
 };

@@ -30,7 +30,8 @@ export type WidgetType =
   | "streak"
   | "morning"
   | "meta"
-  | "book-add";
+  | "book-add"
+  | "tasks";
 
 /** How much grid space a widget takes. */
 export type WidgetSize = "s" | "m" | "l";

@@ -982,6 +982,35 @@ input[type="color"] {
   border-bottom: 1px solid transparent;
 }
 
+/* ---- tasks (Notion-backed, ?w=tasks) — Task list with a Time Log stopwatch ---- */
+
+.tasks-head {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tasks-timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--subtext);
+  background: var(--gray-bg);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.tasks-timer.running {
+  background: var(--lav-bg);
+  color: var(--lav-ink);
+}
+
+.tasks-row.active {
+  background: var(--lav-bg);
+  border-radius: var(--radius);
+  margin: 0 -6px;
+  padding: 6px;
+  border-bottom-color: transparent;
+}
+
 .link-list a:hover {
   border-bottom-color: var(--accent);
 }
