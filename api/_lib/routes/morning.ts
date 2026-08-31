@@ -3,6 +3,7 @@ import { queryDatabase, updatePageProperties, propString, richTextProperty } fro
 import { ensureDailyLogPage } from "../dailyLog.js";
 import { todayKST } from "../date.js";
 import { sendError, withCache } from "../http.js";
+import { requireKey } from "../auth.js";
 import { DB } from "../db.js";
 
 /** Only these two fields are writable from the client — the property name
@@ -16,6 +17,7 @@ type Field = keyof typeof FIELD_PROPERTY;
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method === "POST") {
+    if (!requireKey(req, res)) return;
     await handleWrite(req, res);
     return;
   }

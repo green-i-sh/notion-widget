@@ -71,17 +71,26 @@ function withQuery(path: string, params: Record<string, string | undefined>): st
   return qs ? `${path}?${qs}` : path;
 }
 
+/** The widget's own embed URL carries ?k=... (WIDGET-SPEC.md's shared-secret
+ *  gate) — forward it to every /api/* call so writes don't 401. Reads don't
+ *  require it, but sending it along costs nothing and keeps one code path. */
+function withKey(url: string): string {
+  const key = new URLSearchParams(window.location.search).get("k");
+  if (!key) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}k=${encodeURIComponent(key)}`;
+}
+
 /** Appends a bust-cache param and skips the browser's own cache — used right after a write. */
 async function getJSON<T>(url: string, opts?: FetchOpts): Promise<T> {
   const bustUrl = opts?.bust ? `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}` : url;
-  const res = await fetch(bustUrl, opts?.bust ? { cache: "no-store" } : undefined);
+  const res = await fetch(withKey(bustUrl), opts?.bust ? { cache: "no-store" } : undefined);
   const body = (await res.json().catch(() => null)) as (T & ErrorBody) | null;
   if (!res.ok) throw new Error(describeError(body, res.status));
   return body as T;
 }
 
 async function postJSON(url: string, payload: unknown): Promise<void> {
-  const res = await fetch(url, {
+  const res = await fetch(withKey(url), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -95,7 +104,7 @@ async function postJSON(url: string, payload: unknown): Promise<void> {
 /** Like postJSON, but returns the parsed response body — for endpoints whose
  *  result the caller needs (e.g. a duplicate flag), not just success/failure. */
 async function postJSONResult<T>(url: string, payload: unknown): Promise<T> {
-  const res = await fetch(url, {
+  const res = await fetch(withKey(url), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

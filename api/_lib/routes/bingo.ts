@@ -2,10 +2,13 @@ import type { ApiRequest, ApiResponse } from "../types.js";
 import { updatePageProperties } from "../notion.js";
 import { fetchBingoRows, latestBoard } from "../bingo.js";
 import { sendError } from "../http.js";
+import { requireKey } from "../auth.js";
+import { assertParentDb } from "../guard.js";
 import { DB } from "../db.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method === "POST") {
+    if (!requireKey(req, res)) return;
     await handleToggle(req, res);
     return;
   }
@@ -36,6 +39,7 @@ async function handleToggle(req: ApiRequest, res: ApiResponse) {
     return;
   }
   try {
+    if (!(await assertParentDb(body.pageId, DB.bingo, res))) return;
     await updatePageProperties(body.pageId, { Done: { checkbox: body.value } });
     res.status(200).json({ ok: true });
   } catch (err) {

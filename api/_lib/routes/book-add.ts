@@ -1,6 +1,7 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
 import { createPage, queryDatabase, uploadCoverFromUrl } from "../notion.js";
 import { sendError } from "../http.js";
+import { requireKey } from "../auth.js";
 import { DB } from "../db.js";
 
 // Notion caps a single rich_text object at 2000 chars — Kakao's book blurb
@@ -26,6 +27,8 @@ function pageChildren(contents?: string): Record<string, unknown>[] {
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  if (!requireKey(req, res)) return;
+
   const body = (req.body ?? {}) as {
     title?: string;
     author?: string;

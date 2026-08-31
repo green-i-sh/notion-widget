@@ -1,6 +1,8 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
 import { queryDatabase, updatePageProperties, propString, propMultiSelect, propDateStart } from "../notion.js";
 import { sendError, withCache } from "../http.js";
+import { requireKey } from "../auth.js";
+import { assertParentDb } from "../guard.js";
 import { DB } from "../db.js";
 
 async function handleGet(res: ApiResponse) {
@@ -55,14 +57,19 @@ async function handlePost(req: ApiRequest, res: ApiResponse) {
     res.status(400).json({ error: "patch에 허용된 필드가 없습니다." });
     return;
   }
+  if (!(await assertParentDb(body.taskId, DB.tasks, res))) return;
   await updatePageProperties(body.taskId, properties);
   res.status(200).json({ ok: true });
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
-    if (req.method === "POST") await handlePost(req, res);
-    else await handleGet(res);
+    if (req.method === "POST") {
+      if (!requireKey(req, res)) return;
+      await handlePost(req, res);
+    } else {
+      await handleGet(res);
+    }
   } catch (err) {
     sendError(res, err, { endpoint: "inbox", databaseId: DB.tasks });
   }

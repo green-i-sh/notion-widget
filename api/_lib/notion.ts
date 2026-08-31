@@ -173,13 +173,15 @@ export async function uploadCoverFromUrl(imageUrl: string): Promise<string | nul
   }
 }
 
-export async function retrievePage(pageId: string): Promise<{ id: string; properties: Record<string, unknown> }> {
+export async function retrievePage(
+  pageId: string
+): Promise<{ id: string; properties: Record<string, unknown>; parent?: { type?: string; database_id?: string } }> {
   const res = await fetch(`${API_BASE}/pages/${pageId}`, {
     method: "GET",
     headers: authHeaders(),
   });
   if (!res.ok) await throwNotionError(res);
-  return res.json() as Promise<{ id: string; properties: Record<string, unknown> }>;
+  return res.json() as Promise<{ id: string; properties: Record<string, unknown>; parent?: { type?: string; database_id?: string } }>;
 }
 
 /**

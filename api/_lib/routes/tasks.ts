@@ -2,6 +2,8 @@ import type { ApiRequest, ApiResponse } from "../types.js";
 import { queryDatabase, updatePageProperties, createPage, retrievePage, propString, propNumber, propDateStart, propMultiSelect, propRelation } from "../notion.js";
 import { todayKST, nowKST, addDays } from "../date.js";
 import { sendError } from "../http.js";
+import { requireKey } from "../auth.js";
+import { assertParentDb } from "../guard.js";
 import { DB } from "../db.js";
 
 const ACTIONS = ["start", "pause", "done"] as const;
@@ -9,6 +11,7 @@ type Action = (typeof ACTIONS)[number];
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method === "POST") {
+    if (!requireKey(req, res)) return;
     await handleAction(req, res);
     return;
   }
@@ -102,6 +105,7 @@ async function handleAction(req: ApiRequest, res: ApiResponse) {
     } else if (action === "pause") {
       await pauseRunning(taskId);
     } else if (action === "done") {
+      if (!(await assertParentDb(taskId, DB.tasks, res))) return;
       await pauseRunning(taskId);
       await updatePageProperties(taskId, {
         Status: { select: { name: "Done" } },

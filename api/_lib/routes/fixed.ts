@@ -2,6 +2,7 @@ import type { ApiRequest, ApiResponse } from "../types.js";
 import { queryDatabase, createPage, propString, propNumber, propCheckbox, propDateStart } from "../notion.js";
 import { monthOf, todayKST, monthDateRange } from "../date.js";
 import { sendError, withCache } from "../http.js";
+import { requireKey } from "../auth.js";
 import { DB } from "../db.js";
 
 /** Fixed Expense's 대출/카드 collapse into Finance's single "카드/대출" Type (WORK-ORDER). */
@@ -158,6 +159,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   try {
     if (req.method === "POST") {
+      if (!requireKey(req, res)) return;
       const body = (req.body ?? {}) as { month?: string; amounts?: Record<string, number> };
       await handlePost(res, body.month ?? queryMonth ?? monthOf(), today, body.amounts ?? {});
     } else {

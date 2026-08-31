@@ -3,6 +3,7 @@ import { queryDatabase, updatePageProperties, propCheckbox, propDateStart } from
 import { ensureDailyLogPage } from "../dailyLog.js";
 import { mondayOf, addDays, todayKST } from "../date.js";
 import { sendError, withCache } from "../http.js";
+import { requireKey } from "../auth.js";
 import { DB } from "../db.js";
 
 const ROUTINES = ["Exercise", "Reading", "Organizing", "Other"] as const;
@@ -10,6 +11,7 @@ type Routine = (typeof ROUTINES)[number];
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method === "POST") {
+    if (!requireKey(req, res)) return;
     await handleToggle(req, res);
     return;
   }

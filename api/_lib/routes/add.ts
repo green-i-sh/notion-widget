@@ -2,6 +2,7 @@ import type { ApiRequest, ApiResponse } from "../types.js";
 import { createPage } from "../notion.js";
 import { todayKST } from "../date.js";
 import { sendError } from "../http.js";
+import { requireKey } from "../auth.js";
 import { DB } from "../db.js";
 
 const TARGETS = ["task", "expense", "income", "life", "letter"] as const;
@@ -9,6 +10,12 @@ type Target = (typeof TARGETS)[number];
 
 function titleProp(title: string) {
   return { Name: { title: [{ text: { content: title } }] } };
+}
+
+/** A non-finite/non-number amount (e.g. a stray string from a malformed
+ *  request) must never reach Notion as NaN — fall back to 0 instead. */
+function safeAmount(amount: unknown): number {
+  return typeof amount === "number" && Number.isFinite(amount) ? amount : 0;
 }
 
 function addTask(title: string) {
@@ -42,9 +49,12 @@ function addLetter(title: string) {
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const body = (req.body ?? {}) as { to?: string; title?: string; amount?: number };
+  if (!requireKey(req, res)) return;
+
+  const body = (req.body ?? {}) as { to?: string; title?: string; amount?: unknown };
   const to = body.to as Target;
   const title = body.title?.trim();
+  const amount = safeAmount(body.amount);
 
   if (!TARGETS.includes(to)) {
     res.status(400).json({ error: "잘못된 요청입니다.", message: `to는 ${TARGETS.join("/")} 중 하나여야 합니다.` });
@@ -57,8 +67,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   try {
     if (to === "task") await addTask(title);
-    else if (to === "expense") await addFinance(title, "Expense", body.amount ?? 0);
-    else if (to === "income") await addFinance(title, "Income", body.amount ?? 0);
+    else if (to === "expense") await addFinance(title, "Expense", amount);
+    else if (to === "income") await addFinance(title, "Income", amount);
     else if (to === "life") await addLife(title);
     else await addLetter(title);
 
