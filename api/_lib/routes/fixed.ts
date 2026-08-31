@@ -84,9 +84,11 @@ async function handlePost(res: ApiResponse, month: string, today: string, amount
   ]);
 
   let created = 0;
-  const skipped: { name: string; reason: "duplicate" | "amount-missing" }[] = [];
+  const skipped: { name: string; reason: "duplicate" | "amount-missing" | "error" }[] = [];
 
   // Sequential, not Promise.all — Notion's API is rate-limited to ~3 req/s.
+  // Each create is isolated: one row's Notion error (e.g. a blank Type) must
+  // not abort the rows still queued behind it.
   for (const r of rows) {
     if (reflected.has(r.name)) {
       skipped.push({ name: r.name, reason: "duplicate" });
@@ -103,13 +105,18 @@ async function handlePost(res: ApiResponse, month: string, today: string, amount
       Name: { title: [{ text: { content: r.name } }] },
       Amount: { number: -Math.abs(amount) },
       Type: { select: { name: financeType } },
-      Category: { select: { name: r.type } },
       Date: { date: { start: dueDate(month, r.dueDay) } },
     };
+    if (r.type) properties["Category"] = { select: { name: r.type } };
     if (budgetId) properties["Budget"] = { relation: [{ id: budgetId }] };
 
-    await createPage(DB.finance, properties);
-    created++;
+    try {
+      await createPage(DB.finance, properties);
+      created++;
+    } catch (err) {
+      console.error("[fixed] createPage failed", r.name, err);
+      skipped.push({ name: r.name, reason: "error" });
+    }
   }
 
   res.status(200).json({ ok: true, created, skipped: skipped.length, skippedDetails: skipped });

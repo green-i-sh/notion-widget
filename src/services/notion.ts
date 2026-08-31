@@ -483,7 +483,7 @@ export interface ApplyFixedResult {
   ok: boolean;
   created: number;
   skipped: number;
-  skippedDetails: { name: string; reason: "duplicate" | "amount-missing" }[];
+  skippedDetails: { name: string; reason: "duplicate" | "amount-missing" | "error" }[];
 }
 
 export function applyFixed(amounts: Record<string, number>): Promise<ApplyFixedResult> {
