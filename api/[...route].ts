@@ -13,6 +13,7 @@ import taskcal from "./_lib/routes/taskcal.js";
 import add from "./_lib/routes/add.js";
 import finance from "./_lib/routes/finance.js";
 import financeMonth from "./_lib/routes/finance-month.js";
+import fixed from "./_lib/routes/fixed.js";
 import life from "./_lib/routes/life.js";
 import review from "./_lib/routes/review.js";
 import shelf from "./_lib/routes/shelf.js";
@@ -45,6 +46,7 @@ export const ROUTES: Record<string, (req: ApiRequest, res: ApiResponse) => Promi
   add,
   finance,
   "finance-month": financeMonth,
+  fixed,
   life,
   review,
   shelf,

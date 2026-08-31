@@ -1218,6 +1218,38 @@ input[type="color"] {
   font-size: 12.5px;
 }
 
+/* ---- fixed (Notion-backed, ?w=fixed) — Fixed Expense list, applied to Finance for the month ---- */
+
+.fixed-amount-input {
+  width: 92px;
+  text-align: right;
+}
+
+.fixed-dot {
+  color: var(--gray-ink);
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+}
+
+.fixed-dot.done {
+  color: var(--green-ink);
+}
+
+.fixed-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

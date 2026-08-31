@@ -22,6 +22,7 @@ import { TimelineWidget } from "./TimelineWidget";
 import { BingoWidget } from "./BingoWidget";
 import { FinanceWidget } from "./FinanceWidget";
 import { FinanceMonthWidget } from "./FinanceMonthWidget";
+import { FixedWidget } from "./FixedWidget";
 import { LifeWidget } from "./LifeWidget";
 import { ReviewWidget } from "./ReviewWidget";
 import { ShelfWidget } from "./ShelfWidget";
@@ -72,6 +73,7 @@ export const WIDGETS: Record<WidgetType, Entry> = {
   bingo: { title: "Bingo", Component: BingoWidget, flush: true },
   finance: { title: "Finance", Component: FinanceWidget, flush: true },
   "finance-month": { title: "Finance · Month", Component: FinanceMonthWidget, flush: true },
+  fixed: { title: "Fixed Expense", Component: FixedWidget, flush: true },
   life: { title: "Life", Component: LifeWidget, flush: true },
   review: { title: "Review", Component: ReviewWidget, flush: true },
   shelf: { title: "Shelf", Component: ShelfWidget, flush: true },

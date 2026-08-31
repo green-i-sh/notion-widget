@@ -22,6 +22,7 @@ export type WidgetType =
   | "bingo"
   | "finance"
   | "finance-month"
+  | "fixed"
   | "life"
   | "review"
   | "shelf"

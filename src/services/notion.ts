@@ -459,6 +459,37 @@ export function fetchTaskCal(month?: string, opts?: FetchOpts): Promise<TaskCalD
   return getJSON(withQuery("/api/taskcal", { month }), opts);
 }
 
+export interface FixedItem {
+  id: string;
+  name: string;
+  type: string;
+  amount: number;
+  dueDay: number;
+  variable: boolean;
+  remaining: string;
+  reflected: boolean;
+}
+
+export interface FixedData {
+  month: string;
+  items: FixedItem[];
+}
+
+export function fetchFixed(opts?: FetchOpts): Promise<FixedData> {
+  return getJSON("/api/fixed", opts);
+}
+
+export interface ApplyFixedResult {
+  ok: boolean;
+  created: number;
+  skipped: number;
+  skippedDetails: { name: string; reason: "duplicate" | "amount-missing" }[];
+}
+
+export function applyFixed(amounts: Record<string, number>): Promise<ApplyFixedResult> {
+  return postJSONResult("/api/fixed", { amounts });
+}
+
 export type AddTarget = "task" | "expense" | "income" | "life" | "letter";
 
 export function addEntry(to: AddTarget, title: string, amount?: number): Promise<void> {
