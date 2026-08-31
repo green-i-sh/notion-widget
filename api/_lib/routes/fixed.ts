@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from "../types.js";
-import { queryDatabase, createPage, propString, propNumber, propCheckbox } from "../notion.js";
+import { queryDatabase, createPage, propString, propNumber, propCheckbox, propDateStart } from "../notion.js";
 import { monthOf, todayKST, monthDateRange } from "../date.js";
 import { sendError, withCache } from "../http.js";
 import { DB } from "../db.js";
@@ -45,13 +45,39 @@ async function activeFixedRows(today: string): Promise<FixedRow[]> {
   }));
 }
 
-/** Names already reflected in Finance this month — the dedup + "reflected" check share this. */
-async function financeNamesInMonth(month: string): Promise<Set<string>> {
+interface FinanceEntry {
+  name: string;
+  amount: number;
+  day: number;
+}
+
+/** This month's Finance rows, reduced to what identifies which Fixed Expense
+ *  row they came from — the dedup + "reflected" check share this. */
+async function financeEntriesInMonth(month: string): Promise<FinanceEntry[]> {
   const result = await queryDatabase(DB.finance, {
     filter: { property: "Month", formula: { string: { equals: month } } },
     page_size: 200,
   });
-  return new Set(result.results.map((page) => propString(page.properties["Name"])));
+  return result.results.map((page) => {
+    const start = propDateStart(page.properties["Date"]);
+    return {
+      name: propString(page.properties["Name"]),
+      amount: Math.abs(propNumber(page.properties["Amount"])),
+      day: start ? Number(start.slice(-2)) : 0,
+    };
+  });
+}
+
+/** Same Name + due day identifies "this fixed expense, already reflected this
+ *  month" — several Fixed Expense rows can share a Name (e.g. three separate
+ *  loans all called "학자금"), so Name alone isn't enough. Amount also has to
+ *  match for non-Variable rows, since two same-named/same-day rows could
+ *  still differ in amount; Variable rows skip that check because their
+ *  amount is expected to change every month. */
+function isReflected(entries: FinanceEntry[], row: FixedRow, expectedDay: number): boolean {
+  return entries.some(
+    (e) => e.name === row.name && e.day === expectedDay && (row.variable || e.amount === row.amount)
+  );
 }
 
 async function budgetPageId(month: string): Promise<string | null> {
@@ -70,16 +96,19 @@ function dueDate(month: string, dueDay: number): string {
 }
 
 async function handleGet(res: ApiResponse, month: string, today: string) {
-  const [rows, reflected] = await Promise.all([activeFixedRows(today), financeNamesInMonth(month)]);
-  const items = rows.map((r) => ({ ...r, reflected: reflected.has(r.name) }));
+  const [rows, entries] = await Promise.all([activeFixedRows(today), financeEntriesInMonth(month)]);
+  const items = rows.map((r) => ({
+    ...r,
+    reflected: isReflected(entries, r, Number(dueDate(month, r.dueDay).slice(-2))),
+  }));
   withCache(res);
   res.status(200).json({ month, items });
 }
 
 async function handlePost(res: ApiResponse, month: string, today: string, amounts: Record<string, number>) {
-  const [rows, reflected, budgetId] = await Promise.all([
+  const [rows, entries, budgetId] = await Promise.all([
     activeFixedRows(today),
-    financeNamesInMonth(month),
+    financeEntriesInMonth(month),
     budgetPageId(month),
   ]);
 
@@ -90,7 +119,8 @@ async function handlePost(res: ApiResponse, month: string, today: string, amount
   // Each create is isolated: one row's Notion error (e.g. a blank Type) must
   // not abort the rows still queued behind it.
   for (const r of rows) {
-    if (reflected.has(r.name)) {
+    const expectedDay = Number(dueDate(month, r.dueDay).slice(-2));
+    if (isReflected(entries, r, expectedDay)) {
       skipped.push({ name: r.name, reason: "duplicate" });
       continue;
     }
