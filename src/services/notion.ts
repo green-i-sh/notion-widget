@@ -392,10 +392,23 @@ export interface InboxTask {
   priority: string;
   context: string[];
   when: string;
+  due: string | null;
 }
 
 export function fetchInbox(opts?: FetchOpts): Promise<{ tasks: InboxTask[] }> {
   return getJSON("/api/inbox", opts);
+}
+
+export interface InboxPatch {
+  priority?: string;
+  context?: string[];
+  when?: string;
+  due?: string | null;
+  status?: string;
+}
+
+export function patchInboxTask(taskId: string, patch: InboxPatch): Promise<void> {
+  return postJSON("/api/inbox", { taskId, patch });
 }
 
 export interface NextTask {
